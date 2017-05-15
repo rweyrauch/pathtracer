@@ -29,6 +29,7 @@ public:
         }
         return hit_anything;
     }
+    virtual bool bounds(double t0, double t1, AABB& bbox) const;
 
     std::vector<Hitable*> list;
 

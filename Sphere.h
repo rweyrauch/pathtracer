@@ -7,6 +7,8 @@
 
 #include "Hitable.h"
 
+void get_uv(const Vector3& p, double& u, double& v);
+
 class Sphere : public Hitable {
 public:
     Sphere() { }
@@ -17,37 +19,36 @@ public:
             radius(r),
             material(m) { }
 
-    virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const
-    {
-        Vector3 oc = r.origin()-center;
-        double a = dot(r.direction(), r.direction());
-        double b = dot(oc, r.direction());
-        double c = dot(oc, oc)-radius*radius;
-        double discriminant = b*b-a*c;
-        if (discriminant>0) {
-            double temp = (-b-sqrt(discriminant))/a;
-            if (temp<tmax && temp>tmin) {
-                rec.t = temp;
-                rec.p = r.pointAt(rec.t);
-                rec.normal = (rec.p-center)/radius;
-                rec.material = material;
-                //rec.normal.make_unit_vector();
-                return true;
-            }
-            temp = (-b+sqrt(discriminant))/a;
-            if (temp<tmax && temp>tmin) {
-                rec.t = temp;
-                rec.p = r.pointAt(rec.t);
-                rec.normal = (rec.p-center)/radius;
-                rec.material = material;
-                //rec.normal.make_unit_vector();
-                return true;
-            }
-        }
-        return false;
-    }
+    virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const;
+    virtual bool bounds(double t0, double t1, AABB& bbox) const;
 
     Vector3 center;
+    double radius;
+    Material* material;
+
+};
+
+class MovingSphere : public Hitable
+{
+public:
+    MovingSphere() {}
+    MovingSphere(const Vector3& cen0, const Vector3& cen1, double t0, double t1, double r, Material* mtl)
+        :
+        center0(cen0),
+        center1(cen1),
+        time0(t0),
+        time1(t1),
+        radius(r),
+        material(mtl)
+    {}
+
+    virtual bool hit(const Ray& ray, double t_min, double t_max, HitRecord& rec) const;
+    virtual bool bounds(double t0, double t1, AABB& bbox) const;
+
+    Vector3 center(double time) const;
+
+    Vector3 center0, center1;
+    double time0, time1;
     double radius;
     Material* material;
 };

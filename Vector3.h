@@ -86,12 +86,12 @@ public:
 
     inline double length() const
     {
-        return sqrt(e[0]*e[0]+e[1]*e[1]+e[2]*e[2]);
+        return sqrt(squared_length());
     }
 
     inline double squared_length() const
     {
-        return e[0]*e[0]+e[1]*e[1]+e[2]*e[2];
+        return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
     }
 
     inline void make_unit_vector();
@@ -144,14 +144,14 @@ inline Vector3 operator*(const Vector3& v1, double s)
 
 inline double dot(const Vector3& v1, const Vector3& v2)
 {
-    return v1.e[0]*v2.e[0]+v1.e[1]*v2.e[1]+v1.e[2]*v2.e[2];
+    return v1.e[0]*v2.e[0] + v1.e[1]*v2.e[1] + v1.e[2]*v2.e[2];
 }
 
 inline Vector3 cross(const Vector3& v1, const Vector3& v2)
 {
-    return Vector3((v1.e[1]*v2.e[2]-v1.e[2]*v2.e[1]),
-            (-(v1.e[0]*v2.e[2]-v1.e[2]*v2.e[0])),
-            (v1.e[0]*v2.e[1]-v1.e[1]*v2.e[0]));
+    return Vector3((v1.e[1]*v2.e[2] - v1.e[2]*v2.e[1]),
+                   (-(v1.e[0]*v2.e[2] - v1.e[2]*v2.e[0])),
+                   (v1.e[0]*v2.e[1] - v1.e[1]*v2.e[0]));
 }
 
 inline Vector3 unit_vector(const Vector3& v)
@@ -164,7 +164,7 @@ inline Vector3 reflect(const Vector3& v, const Vector3& n)
     return v-2*dot(v, n)*n;
 }
 
-bool refract(const Vector3& v, const Vector3& n, double niOverNt, Vector3& refracted)
+inline bool refract(const Vector3& v, const Vector3& n, double niOverNt, Vector3& refracted)
 {
     Vector3 uv = unit_vector(v);
     double dt = dot(uv, n);

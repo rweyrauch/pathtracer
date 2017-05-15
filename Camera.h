@@ -7,6 +7,7 @@
 
 #include "Vector3.h"
 #include "Ray.h"
+#include "Material.h"
 
 class Camera {
 public:
@@ -25,33 +26,42 @@ public:
         vertical = Vector3(0, 2*halfHeight, 0);
     }
 
-    Camera(const Vector3& from, const Vector3& to, const Vector3& vup, double vfov, double aspect)
+    Camera(const Vector3& from, const Vector3& to, const Vector3& vup, double vfov, double aspect, double aperture, double focal_dist, double t0 = 0, double t1 = 1)
             :
             origin(from),
             lowerLeftCorner(),
             horizontal(),
-            vertical()
+            vertical(),
+            time0(t0),
+            time1(t1)
     {
-        auto w = unit_vector(from-to);
-        auto u = unit_vector(cross(vup, w));
-        auto v = cross(w, u);
+        lens_radius = aperture / 2;
         double theta = vfov*M_PI/180;
         double halfHeight = tan(theta/2);
         double halfWidth = aspect*halfHeight;
-        lowerLeftCorner = origin-halfWidth*u-halfHeight*w;
-        horizontal = 2*halfWidth*u;
-        vertical = 2*halfHeight*v;
+        w = unit_vector(from-to);
+        u = unit_vector(cross(vup, w));
+        v = cross(w, u);
+        lowerLeftCorner = origin - halfWidth * focal_dist * u - halfHeight * focal_dist * v - focal_dist * w;
+        horizontal = 2*halfWidth*focal_dist*u;
+        vertical = 2*halfHeight*focal_dist*v;
     }
 
-    Ray getRay(double u, double v)
+    Ray getRay(double s, double t)
     {
-        return Ray(origin, lowerLeftCorner+u*horizontal+v*vertical-origin);
+        Vector3 rd = lens_radius * randomInUnitDisk();
+        Vector3 offset = u * rd.x() + v * rd.y();
+        double time = time0 + drand48() * (time1 - time0);
+        return Ray(origin + offset, lowerLeftCorner + s * horizontal + t * vertical - origin - offset, time);
     }
 
     Vector3 origin;
     Vector3 lowerLeftCorner;
     Vector3 horizontal;
     Vector3 vertical;
+    Vector3 u, v, w;
+    double time0, time1;
+    double lens_radius;
 };
 
 #endif //PATHTRACER_CAMERA_H

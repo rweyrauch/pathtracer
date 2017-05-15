@@ -8,8 +8,9 @@
 #include "Vector3.h"
 #include "Ray.h"
 #include "Hitable.h"
+#include "Texture.h"
 
-Vector3 randomInUnitSphere()
+inline Vector3 randomInUnitSphere()
 {
     Vector3 p;
     do {
@@ -19,7 +20,16 @@ Vector3 randomInUnitSphere()
     return p;
 }
 
-double schlick(double cs, double ri)
+inline Vector3 randomInUnitDisk()
+{
+    Vector3 p;
+    do {
+        p = 2 * Vector3(drand48(), drand48(), 0) - Vector3(1, 1, 0);
+    } while (dot(p, p) >= 1.0);
+    return p;
+}
+
+inline double schlick(double cs, double ri)
 {
     double r0 = (1-ri)/(1+ri);
     r0 = r0*r0;
@@ -29,23 +39,26 @@ double schlick(double cs, double ri)
 class Material {
 public:
     virtual bool scatter(const Ray& r_in, const HitRecord& rec, Vector3& attenuation, Ray& scattered) const = 0;
+    virtual Vector3 emitted(double u, double v, const Vector3& p) const {
+        return Vector3(0, 0, 0);
+    }
 };
 
 class Lambertian : public Material {
 public:
-    Lambertian(const Vector3& a)
+    Lambertian(Texture* a)
             :
             albedo(a) { }
 
     virtual bool scatter(const Ray& r_in, const HitRecord& rec, Vector3& attenuation, Ray& scattered) const
     {
-        Vector3 target = rec.p+rec.normal*randomInUnitSphere();
+        Vector3 target = rec.p + rec.normal + randomInUnitSphere();
         scattered = Ray(rec.p, target-rec.p);
-        attenuation = albedo;
+        attenuation = albedo->value(0, 0, rec.p);
         return true;
     }
 
-    Vector3 albedo;
+    Texture* albedo;
 };
 
 class Metal : public Material {
@@ -107,6 +120,25 @@ public:
     }
 
     double refIndex;
+};
+
+class DiffuseLight : public Material
+{
+public:
+    DiffuseLight(Texture* a)
+        :
+        emit(a) {}
+
+    virtual bool scatter(const Ray& r_in, const HitRecord& rec, Vector3& attenuation, Ray& scattered) const
+    {
+        return false;
+    }
+    virtual Vector3 emitted(double u, double v, const Vector3& p) const
+    {
+        return emit->value(u, v, p);
+    }
+
+    Texture* emit;
 };
 
 #endif //PATHTRACER_MATERIAL_H
