@@ -10,7 +10,6 @@ set(SOURCE_FILES
         Hitable.h
         Sphere.h
         Sphere.cpp
-        HitableList.h
         Camera.h
         Material.h
         Perlin.h
@@ -20,6 +19,12 @@ set(SOURCE_FILES
         Rectangle.cpp
         Rectangle.h
         AABB.cpp
-        AABB.h HitableList.cpp BVH.cpp BVH.h)
+        AABB.h
+        HitableList.cpp
+        HitableList.h
+        BVH.cpp
+        BVH.h
+        Medium.cpp
+        Medium.h)
 
-add_executable(pathtracer ${SOURCE_FILES} HitableList.cpp BVH.cpp BVH.h)
+add_executable(pathtracer ${SOURCE_FILES})

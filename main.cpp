@@ -13,6 +13,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "Rectangle.h"
+#include "Medium.h"
 
 Vector3 color(const Ray& r, Hitable* world, int depth)
 {
@@ -110,19 +111,25 @@ Hitable* cornellBox()
     list.push_back(new XZRectangle(0, 555, 0, 555, 0, white));
     list.push_back(new FlipNormals(new XYRectangle(0, 555, 0, 555, 555, white)));
 
-    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
-    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295)));
+    //list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
+    //list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295)));
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), Vector3(130, 0, 65)));
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), Vector3(265, 0, 295)));
+
+    Hitable* b1 = new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65));
+    Hitable* b2 = new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295));
+
+    list.push_back(new ConstantMedium(b1, 0.01, new ConstantTexture(Vector3(1, 1, 1))));
+    list.push_back(new ConstantMedium(b2, 0.01, new ConstantTexture(Vector3(0, 0, 0))));
 
     return new HitableList(list);
 }
 
 int main()
 {
-    int nx = 400 * 1;
-    int ny = 300 * 1;
-    int ns = 100 * 2;
+    int nx = 320 * 4;
+    int ny = 240 * 4;
+    int ns = 100 * 10;
 
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
     std::vector<Hitable*> list;
