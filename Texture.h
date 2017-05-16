@@ -84,4 +84,5 @@ public:
     const unsigned char* data;
     int nx, ny;
 };
+
 #endif //PATHTRACER_TEXTURE_H

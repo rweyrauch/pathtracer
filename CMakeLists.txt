@@ -25,6 +25,8 @@ set(SOURCE_FILES
         BVH.cpp
         BVH.h
         Medium.cpp
-        Medium.h)
+        Medium.h
+        Texture.h
+        Texture.cpp)
 
 add_executable(pathtracer ${SOURCE_FILES})

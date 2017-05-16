@@ -48,7 +48,7 @@ BVH::BVH(std::vector<Hitable *> &list, double time0, double time1)
         auto boxXCompare = [](Hitable* a, Hitable* b)->bool {
             AABB boxLeft, boxRight;
             if (!a->bounds(0, 0, boxLeft) || !b->bounds(0, 0, boxRight))
-                std::cerr << "No bounding box in BVH construction.";
+                std::cerr << "No bounding box in BVH construction." << std::endl;
             return (boxLeft.min().x() < boxRight.min().x());
         };
         std::sort(list.begin(), list.end(), boxXCompare);
@@ -58,7 +58,7 @@ BVH::BVH(std::vector<Hitable *> &list, double time0, double time1)
         auto boxYCompare = [](Hitable* a, Hitable* b)->bool {
             AABB boxLeft, boxRight;
             if (!a->bounds(0, 0, boxLeft) || !b->bounds(0, 0, boxRight))
-                std::cerr << "No bounding box in BVH construction.";
+                std::cerr << "No bounding box in BVH construction." << std::endl;
             return (boxLeft.min().y() < boxRight.min().y());
         };
         std::sort(list.begin(), list.end(), boxYCompare);
@@ -68,7 +68,7 @@ BVH::BVH(std::vector<Hitable *> &list, double time0, double time1)
         auto boxZCompare = [](Hitable* a, Hitable* b)->bool {
             AABB boxLeft, boxRight;
             if (!a->bounds(0, 0, boxLeft) || !b->bounds(0, 0, boxRight))
-                std::cerr << "No bounding box in BVH construction.";
+                std::cerr << "No bounding box in BVH construction." << std::endl;
             return (boxLeft.min().z() < boxRight.min().z());
         };
         std::sort(list.begin(), list.end(), boxZCompare);
@@ -90,4 +90,9 @@ BVH::BVH(std::vector<Hitable *> &list, double time0, double time1)
         auto rightNodes = std::vector<Hitable*>(list.begin()+n/2, list.end());
         right = new BVH(rightNodes, time0, time1);
     }
+    AABB boxLeft, boxRight;
+    if (!left->bounds(time0, time1, boxLeft) || !right->bounds(time0, time1, boxRight))
+        std::cerr << "no bound box in BVH node constructor." << std::endl;
+
+    m_bbox = AABB::join(boxLeft, boxRight);
 }

@@ -11,6 +11,7 @@
 
 class BVH : public Hitable
 {
+public:
     BVH() {}
     BVH(std::vector<Hitable*>& list, double time0, double time1);
 
