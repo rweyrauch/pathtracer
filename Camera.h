@@ -11,6 +11,8 @@
 
 class Camera {
 public:
+    Camera() {}
+
     Camera(double vfov, double aspect)
             :
             origin(0, 0, 0),

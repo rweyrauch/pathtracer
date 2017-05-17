@@ -54,7 +54,7 @@ public:
     {
         Vector3 target = rec.p + rec.normal + randomInUnitSphere();
         scattered = Ray(rec.p, target-rec.p);
-        attenuation = albedo->value(0, 0, rec.p);
+        attenuation = albedo->value(rec.u, rec.v, rec.p);
         return true;
     }
 
@@ -72,7 +72,7 @@ public:
     virtual bool scatter(const Ray& r_in, const HitRecord& rec, Vector3& attenuation, Ray& scattered) const
     {
         Vector3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-        scattered = Ray(rec.p, reflected+fuzz*randomInUnitSphere());
+        scattered = Ray(rec.p, reflected + fuzz*randomInUnitSphere());
         attenuation = albedo;
         return (dot(scattered.direction(), rec.normal)>0);
     }
@@ -97,7 +97,9 @@ public:
         if (dot(r_in.direction(), rec.normal)>0) {
             outwardNormal = -rec.normal;
             niOverNt = refIndex;
-            cosine = refIndex*dot(r_in.direction(), rec.normal)/r_in.direction().length();
+            //cosine = refIndex*dot(r_in.direction(), rec.normal)/r_in.direction().length();
+            cosine = dot(r_in.direction(), rec.normal)/r_in.direction().length();
+            cosine = sqrt(1 - refIndex*refIndex*(1-cosine*cosine));
         }
         else {
             outwardNormal = rec.normal;

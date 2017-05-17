@@ -6,12 +6,14 @@
 #include "Ray.h"
 #include "Camera.h"
 #include "Material.h"
+#include "cxxopts.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
 #include "Rectangle.h"
 #include "Medium.h"
 #include "BVH.h"
@@ -38,8 +40,29 @@ Vector3 color(const Ray& r, Hitable* world, int depth)
     }
 }
 
-Hitable* randomScene()
+Hitable* twoSpheres(double aspect, Camera& camera)
 {
+    const Vector3 lookFrom(13, 2, 3);
+    const Vector3 lookAt(0, 0, 0);
+    const double dist_to_focus = 10.0;
+    const double aperture = 0.0;
+    camera = Camera(lookFrom, lookAt, Vector3(0, 1, 0), 20, aspect, aperture, dist_to_focus);
+
+    Texture* checker = new CheckerTexture(new ConstantTexture(Vector3(0.2, 0.3, 0.1)), new ConstantTexture(Vector3(0.9, 0.9, 0.9)));
+    std::vector<Hitable*> list;
+    list.push_back(new Sphere(Vector3(0,-10, 0), 10, new Lambertian(checker)));
+    list.push_back(new Sphere(Vector3(0, 10, 0), 10, new Lambertian(checker)));
+    return new HitableList(list);
+}
+
+Hitable* randomScene(double aspect, Camera& camera)
+{
+    const Vector3 lookFrom(13, 2, 3);
+    const Vector3 lookAt(0, 0, 0);
+    const double dist_to_focus = 10.0;
+    const double aperture = 0.0;
+    camera = Camera(lookFrom, lookAt, Vector3(0, 1, 0), 20, aspect, aperture, dist_to_focus, 0.0, 1.0);
+
     std::vector<Hitable*> list;
     Texture* checker = new CheckerTexture(new ConstantTexture(Vector3(0.2, 0.3, 0.1)), new ConstantTexture(Vector3(0.9, 0.9, 0.9)));
     list.push_back(new Sphere(Vector3(0,-1000,0), 1000, new Lambertian(checker)));
@@ -74,17 +97,32 @@ Hitable* randomScene()
     return new HitableList(list);
 }
 
-Hitable* perlinSpheres()
+Hitable* perlinSpheres(double aspect, Camera& camera)
 {
+    const Vector3 lookFrom(13, 2, 3);
+    const Vector3 lookAt(0, 0, 0);
+    const double dist_to_focus = 10.0;
+    const double aperture = 0.0;
+    camera = Camera(lookFrom, lookAt, Vector3(0, 1, 0), 20, aspect, aperture, dist_to_focus);
+
+    int nx, ny, nz;
+    unsigned char* tex_data = stbi_load("earthmap.jpg", &nx, &ny, &nz, 0);
+
     Texture* noise = new NoiseTexture(4); // ConstantTexture(Vector3(0.5, 0.5, 0.5)); //
     std::vector<Hitable*> list;
     list.push_back(new Sphere(Vector3(0,-1000, 0), 1000, new Lambertian(noise)));
-    list.push_back(new Sphere(Vector3(0, 2, 0), 2, new Lambertian(noise)));
+    list.push_back(new Sphere(Vector3(0, 2, 0), 2, new Lambertian(new ImageTexture(tex_data, nx, ny))));
     return new HitableList(list);
 }
 
-Hitable* simpleLight()
+Hitable* simpleLight(double aspect, Camera& camera)
 {
+    const Vector3 lookFrom(13, 2, 3);
+    const Vector3 lookAt(0, 0, 0);
+    const double dist_to_focus = 10.0;
+    const double aperture = 0.0;
+    camera = Camera(lookFrom, lookAt, Vector3(0, 1, 0), 20, aspect, aperture, dist_to_focus);
+
     Texture* noise = new NoiseTexture(4); // ConstantTexture(Vector3(0.5, 0.5, 0.5)); //
     std::vector<Hitable*> list;
     list.push_back(new Sphere(Vector3(0,-1000, 0), 1000, new Lambertian(noise)));
@@ -96,8 +134,14 @@ Hitable* simpleLight()
     return new HitableList(list);
 }
 
-Hitable* cornellBox()
+Hitable* cornellBox(double aspect, Camera& camera)
 {
+    const Vector3 lookFrom(278, 278, -800);
+    const Vector3 lookAt(278, 278, 0);
+    const double dist_to_focus = 10.0;
+    const double aperture = 0.0;
+    camera = Camera(lookFrom, lookAt, Vector3(0, 1, 0), 40, aspect, aperture, dist_to_focus);
+
     std::vector<Hitable*> list;
 
     Material* red = new Lambertian(new ConstantTexture(Vector3(0.65, 0.05, 0.05)));
@@ -126,13 +170,18 @@ Hitable* cornellBox()
     return new HitableList(list);
 }
 
-Hitable* final()
+Hitable* final(double aspect, Camera& camera)
 {
+    const Vector3 lookFrom(478, 278, -600); //(278, 278, -800); //(13, 2, 3);
+    const Vector3 lookAt(278, 278, 0); //(0, 1, 0);
+    const double dist_to_focus = 10.0;
+    const double aperture = 0.0;
+    camera = Camera(lookFrom, lookAt, Vector3(0, 1, 0), 40, aspect, aperture, dist_to_focus);
+
     int nb = 20;
     std::vector<Hitable *> list;
     Material* white = new Lambertian(new ConstantTexture(Vector3(0.73, 0.73, 0.73)));
     Material* ground = new Lambertian(new ConstantTexture(Vector3(0.48, 0.83, 0.53)));
-    int b = 0;
     std::vector<Hitable*> boxList, boxList2;
     for (int i = 0; i < nb; i++)
     {
@@ -148,9 +197,9 @@ Hitable* final()
             boxList.push_back(new Box(Vector3(x0, y0, z0), Vector3(x1, y1, z1), ground));
         }
     }
-    int l = 0;
+
     list.push_back(new BVH(boxList, 0, 1));
-    Material* light = new DiffuseLight(new ConstantTexture(Vector3(7, 7, 7)));
+    Material* light = new DiffuseLight(new ConstantTexture(Vector3(6, 6, 6)));
     list.push_back(new XZRectangle(123, 423, 147, 412, 554, light));
     Vector3 center(400, 400, 200);
     list.push_back(new MovingSphere(center, center+Vector3(30, 0, 0), 0, 1, 50, new Lambertian(new ConstantTexture(Vector3(0.7, 0.3, 0.1)))));
@@ -158,7 +207,7 @@ Hitable* final()
     list.push_back(new Sphere(Vector3(0, 150, 145), 50, new Metal(Vector3(0.8, 0.8, 0.9), 10)));
     Hitable* boundary = new Sphere(Vector3(360, 150, 145), 70, new Dielectric(1.5));
     list.push_back(boundary);
-    list.push_back(new ConstantMedium(boundary, 0.2, new ConstantTexture(Vector3(0.2, 0.4, 0.9))));
+    list.push_back(new ConstantMedium(boundary, 0.02, new ConstantTexture(Vector3(0.2, 0.4, 0.9))));
     boundary = new Sphere(Vector3(0, 0, 0), 5000, new Dielectric(1.5));
     list.push_back(new ConstantMedium(boundary, 0.0001, new ConstantTexture(Vector3(1.0, 1.0, 1.0))));
     int nx, ny, nz;
@@ -176,32 +225,43 @@ Hitable* final()
     return new HitableList(list);
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    int nx = 800 * 1;
-    int ny = 800 * 1;
-    int ns = 100 * 10;
+    cxxopts::Options options("pathtracer", "Implementation of Peter Shirley's Raytracing in One Weekend book series.");
+    options.add_options()
+        ("q,quick", "Quick render.")
+        ("w,width", "Output width.", cxxopts::value<int>())
+        ("h,height", "Output height.", cxxopts::value<int>())
+        ("n,numsamples", "Number of sample rays per pixel.", cxxopts::value<int>())
+        ("f,file", "Output filename.", cxxopts::value<std::string>());
+
+    options.parse(argc, argv);
+
+    bool quick = options.count("quick") > 0;
+
+    int nx = 800;
+    int ny = 800;
+    int ns = 100 * 100;
+
+    if (options.count("width"))
+        nx = options["width"].as<int>();
+    if (options.count("height"))
+        ny = options["height"].as<int>();
+    if (options.count("numsamples"))
+        ns = options["numsamples"].as<int>();
+
+    if (quick)
+    {
+        nx /= 8;
+        ny /= 8;
+        ns /= 16;
+    }
 
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
-    std::vector<Hitable*> list;
-    list.push_back(new Sphere(Vector3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(new ConstantTexture(Vector3(0.1, 0.2, 0.5)))));
-    list.push_back(new Sphere(Vector3(0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(new ConstantTexture(Vector3(0.8, 0.8, 0.0)))));
-    list.push_back(new Sphere(Vector3(1, 0, -1), 0.5, new Metal(Vector3(0.8, 0.6, 0.2), 0.3)));
-    list.push_back(new Sphere(Vector3(-1, 0, -1), 0.5, new Dielectric(1.5)));
-    list.push_back(new Sphere(Vector3(-1,0,-1), -0.45, new Dielectric(1.5)));
 
-    //double R = cos(M_PI/4);
-    //list.push_back(new Sphere(Vector3(-R,0,-1), R, new Lambertian(Vector3(0,0,1))));
-    //list.push_back(new Sphere(Vector3(R,0,-1), R, new Lambertian(Vector3(1,0,0))));
-
-    Hitable* world = final();// cornellBox(); // simpleLight(); //randomScene(); //
-
-    //Camera cam(90, double(nx)/ny);
-    const Vector3 lookFrom(478, 278, -600); //(278, 278, -800); //(13, 2, 3);
-    const Vector3 lookAt(278, 278, 0); //(0, 1, 0);
-    const double dist_to_focus = 10.0;
-    const double aperture = 0.0;
-    Camera cam(lookFrom, lookAt, Vector3(0, 1, 0), 40, double(nx)/double(ny), aperture, dist_to_focus);
+    Camera cam;
+    const double aspect = double(nx)/double(ny);
+    Hitable* world = final(aspect, cam);// cornellBox(); // simpleLight(); //randomScene(); //
 
     for (int j = ny-1; j>=0; j--) {
         for (int i = 0; i<nx; i++) {

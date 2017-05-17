@@ -28,7 +28,7 @@ bool Sphere::hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const
             rec.p = r.pointAt(rec.t);
             rec.normal = (rec.p - center) / radius;
             rec.material = material;
-            get_uv(rec.p, rec.u, rec.v);
+            get_uv(rec.normal, rec.u, rec.v);
             return true;
         }
         temp = (-b + sqrt(discriminant)) / a;
@@ -38,7 +38,7 @@ bool Sphere::hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const
             rec.p = r.pointAt(rec.t);
             rec.normal = (rec.p - center) / radius;
             rec.material = material;
-            get_uv(rec.p, rec.u, rec.v);
+            get_uv(rec.normal, rec.u, rec.v);
             return true;
         }
     }
