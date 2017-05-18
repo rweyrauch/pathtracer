@@ -27,6 +27,9 @@ set(SOURCE_FILES
         Medium.cpp
         Medium.h
         Texture.h
-        Texture.cpp)
+        Texture.cpp
+        Progress.cpp
+        Progress.h
+        )
 
 add_executable(pathtracer ${SOURCE_FILES})

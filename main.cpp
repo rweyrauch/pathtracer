@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cfloat>
+#include <fstream>
 #include "Sphere.h"
 #include "HitableList.h"
 #include "Vector3.h"
@@ -17,6 +18,7 @@
 #include "Rectangle.h"
 #include "Medium.h"
 #include "BVH.h"
+#include "Progress.h"
 
 Vector3 color(const Ray& r, Hitable* world, int depth)
 {
@@ -243,12 +245,16 @@ int main(int argc, char** argv)
     int ny = 800;
     int ns = 100 * 100;
 
+    std::string outFile("foo.ppm");
+
     if (options.count("width"))
         nx = options["width"].as<int>();
     if (options.count("height"))
         ny = options["height"].as<int>();
     if (options.count("numsamples"))
         ns = options["numsamples"].as<int>();
+    if (options.count("file"))
+        outFile = options["file"].as<std::string>();
 
     if (quick)
     {
@@ -257,29 +263,54 @@ int main(int argc, char** argv)
         ns /= 16;
     }
 
-    std::cout << "P3\n" << nx << " " << ny << "\n255\n";
-
     Camera cam;
     const double aspect = double(nx)/double(ny);
     Hitable* world = final(aspect, cam);// cornellBox(); // simpleLight(); //randomScene(); //
 
-    for (int j = ny-1; j>=0; j--) {
-        for (int i = 0; i<nx; i++) {
+    Vector3* outImage = new Vector3[nx * ny];
+
+    Progress progress(nx*ny, "PathTracers");
+
+    int index = 0;
+    for (int j = ny-1; j>=0; j--)
+    {
+        for (int i = 0; i<nx; i++)
+        {
             Vector3 col(0, 0, 0);
-            for (int s = 0; s<ns; s++) {
+            for (int s = 0; s<ns; s++)
+            {
                 auto u = (i+drand48())/double(nx);
                 auto v = (j+drand48())/double(ny);
                 Ray r = cam.getRay(u, v);
                 col += color(r, world, 0);
             }
             col /= double(ns);
-            col = Vector3(sqrt(std::max(0.0, col[0])), sqrt(std::max(0.0, col[1])), sqrt(std::max(0.0, col[2])));
-            int ir = int(255.99*col[0]);
-            int ig = int(255.99*col[1]);
-            int ib = int(255.99*col[2]);
-
-            std::cout << ir << " " << ig << " " << ib << "\n";
+            outImage[index++] = Vector3(sqrt(std::max(0.0, col[0])), sqrt(std::max(0.0, col[1])), sqrt(std::max(0.0, col[2])));
+            progress.update(1);
         }
     }
+
+    progress.completed();
+
+    std::ofstream of(outFile.c_str());
+    if (of.is_open())
+    {
+        of << "P3\n" << nx << " " << ny << "\n255\n";
+
+        for (int i = 0; i < nx * ny; i++)
+        {
+            Vector3 col = outImage[i];
+
+            int ir = int(255.99 * col[0]);
+            int ig = int(255.99 * col[1]);
+            int ib = int(255.99 * col[2]);
+
+            of << ir << " " << ig << " " << ib << "\n";
+        }
+    }
+    of.close();
+
+    delete[] outImage;
+
     return 0;
 }
