@@ -23,6 +23,7 @@ class Hitable {
 public:
     virtual bool hit(const Ray& r, double t_min, double t_max, HitRecord& rec) const = 0;
     virtual bool bounds(double t0, double t1, AABB& bbox) const = 0;
+    virtual int numChildren() const { return 0; }
 };
 
 #endif //PATHTRACER_HITABLE_H

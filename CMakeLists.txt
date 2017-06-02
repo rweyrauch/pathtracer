@@ -30,6 +30,9 @@ set(SOURCE_FILES
         Texture.cpp
         Progress.cpp
         Progress.h
-        )
+        World.h
+        World.cpp
+        ONB.h
+        ONB.cpp)
 
 add_executable(pathtracer ${SOURCE_FILES})

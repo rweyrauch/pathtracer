@@ -89,12 +89,12 @@ Box::Box(const Vector3 &p0, const Vector3 &p1, Material *mat) :
     hl.push_back(new FlipNormals(new XZRectangle(p0.x(), p1.x(), p0.z(), p1.z(), p0.y(), mat)));
     hl.push_back(new YZRectangle(p0.y(), p1.y(), p0.z(), p1.z(), p1.x(), mat));
     hl.push_back(new FlipNormals(new YZRectangle(p0.y(), p1.y(), p0.z(), p1.z(), p0.x(), mat)));
-    list = new HitableList(hl);
+    child = new HitableList(hl);
 }
 
 bool Box::hit(const Ray &r_in, double t0, double t1, HitRecord &rec) const
 {
-    return list->hit(r_in, t0, t1, rec);
+    return child->hit(r_in, t0, t1, rec);
 }
 
 bool Box::bounds(double t0, double t1, AABB &bbox) const

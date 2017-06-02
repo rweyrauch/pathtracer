@@ -89,6 +89,8 @@ public:
         return hitable->bounds(t0, t1, bbox);
     }
 
+    virtual int numChildren() const { return 1 + hitable->numChildren(); }
+
     Hitable* hitable;
 };
 
@@ -100,9 +102,10 @@ public:
 
     virtual bool hit(const Ray& r_in, double t0, double t1, HitRecord& rec) const;
     virtual bool bounds(double t0, double t1, AABB& bbox) const;
+    virtual int numChildren() const { return 1 + child->numChildren(); }
 
     Vector3 pmin, pmax;
-    HitableList* list;
+    Hitable* child;
 };
 
 class Translate : public Hitable
@@ -134,6 +137,8 @@ public:
         return false;
     }
 
+    virtual int numChildren() const { return 1 + hitable->numChildren(); }
+
     Hitable* hitable;
     Vector3 offset;
 };
@@ -149,6 +154,8 @@ public:
         bbox = this->bbox;
         return hasBox;
     }
+
+    virtual int numChildren() const { return 1 + hitable->numChildren(); }
 
     Hitable* hitable;
     double sinTheta, cosTheta;

@@ -24,6 +24,7 @@ public:
     {
         return boundary->bounds(t0, t1, bbox);
     }
+    virtual int numChildren() const { return 1 + boundary->numChildren(); }
 
     Hitable* boundary;
     double density;

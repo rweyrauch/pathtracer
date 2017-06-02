@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "Material.h"
 #include "cxxopts.hpp"
+#include "World.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -25,10 +26,25 @@ Vector3 color(const Ray& r, Hitable* world, int depth)
     HitRecord rec;
     if (world->hit(r, 0.001, DBL_MAX, rec)) {
         Ray scattered;
-        Vector3 attenuation(0, 0, 0);
-        Vector3 emitted = rec.material->emitted(rec.u, rec.v, rec.p);
-        if (depth<50 && rec.material->scatter(r, rec, attenuation, scattered)) {
-            return emitted + attenuation * color(scattered, world, depth+1);
+        Vector3 albedo(0, 0, 0);
+        Vector3 emitted = rec.material->emitted(r, rec, rec.u, rec.v, rec.p);
+        double pdf;
+        if (depth<50 && rec.material->scatter(r, rec, albedo, scattered, pdf)) {
+            // HACK
+            Vector3 onLight = Vector3(213 + drand48()*(343-213), 554, 227 + drand48()*(332-227));
+            Vector3 toLight = onLight - rec.p;
+            double distSqrd = toLight.squared_length();
+            toLight.make_unit_vector();
+            if (dot(toLight, rec.normal) < 0)
+                return emitted;
+            double lightArea = (343-213)*(332-227);
+            double lightCos = fabs(toLight.y());
+            if (lightCos < 0.000001)
+                return emitted;
+            pdf = distSqrd / (lightCos * lightArea);
+            scattered = Ray(rec.p, toLight, r.time());
+            // HACK
+            return emitted + albedo * rec.material->scatteringPdf(r, rec, scattered) * color(scattered, world, depth+1) / pdf;
         }
         else {
             return emitted;
@@ -158,16 +174,16 @@ Hitable* cornellBox(double aspect, Camera& camera)
     list.push_back(new XZRectangle(0, 555, 0, 555, 0, white));
     list.push_back(new FlipNormals(new XYRectangle(0, 555, 0, 555, 555, white)));
 
-    //list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
-    //list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295)));
+    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
+    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295)));
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), Vector3(130, 0, 65)));
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), Vector3(265, 0, 295)));
 
-    Hitable* b1 = new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65));
-    Hitable* b2 = new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295));
+    //Hitable* b1 = new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65));
+    //Hitable* b2 = new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295));
 
-    list.push_back(new ConstantMedium(b1, 0.01, new ConstantTexture(Vector3(1, 1, 1))));
-    list.push_back(new ConstantMedium(b2, 0.01, new ConstantTexture(Vector3(0, 0, 0))));
+    //list.push_back(new ConstantMedium(b1, 0.01, new ConstantTexture(Vector3(1, 1, 1))));
+    //list.push_back(new ConstantMedium(b2, 0.01, new ConstantTexture(Vector3(0, 0, 0))));
 
     return new HitableList(list);
 }
@@ -227,6 +243,7 @@ Hitable* final(double aspect, Camera& camera)
     return new HitableList(list);
 }
 
+
 int main(int argc, char** argv)
 {
     cxxopts::Options options("pathtracer", "Implementation of Peter Shirley's Raytracing in One Weekend book series.");
@@ -265,7 +282,10 @@ int main(int argc, char** argv)
 
     Camera cam;
     const double aspect = double(nx)/double(ny);
-    Hitable* world = final(aspect, cam);// cornellBox(); // simpleLight(); //randomScene(); //
+    Hitable* world = cornellBox(aspect, cam);// cornellBox(); // simpleLight(); //randomScene(); //
+
+    int numHitables = world->numChildren();
+    std::cout << "Total Hitables: " << numHitables << std::endl;
 
     Vector3* outImage = new Vector3[nx * ny];
 

@@ -31,6 +31,16 @@ public:
     }
     virtual bool bounds(double t0, double t1, AABB& bbox) const;
 
+    virtual int numChildren() const
+    {
+        int numChildren = 1;
+        for (auto ip : list)
+        {
+            numChildren += ip->numChildren();
+        }
+        return numChildren;
+    }
+
     std::vector<Hitable*> list;
 
 };
