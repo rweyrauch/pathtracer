@@ -156,7 +156,7 @@ bool RotateY::hit(const Ray &r_in, double t0, double t1, HitRecord &rec) const
         p[0] = cosTheta*rec.p[0] + sinTheta*rec.p[2];
         p[2] = -sinTheta*rec.p[0] + cosTheta*rec.p[2];
         normal[0] = cosTheta*rec.normal[0] + sinTheta*rec.normal[2];
-        normal[2] = -sinTheta*rec.normal[2] + cosTheta*rec.normal[2];
+        normal[2] = -sinTheta*rec.normal[0] + cosTheta*rec.normal[2];
         rec.p = p;
         rec.normal = normal;
         return true;
