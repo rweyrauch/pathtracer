@@ -22,6 +22,9 @@ public:
     virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const;
     virtual bool bounds(double t0, double t1, AABB& bbox) const;
 
+    virtual double pdfValue(const Vector3& o, const Vector3& v) const;
+    virtual Vector3 random(const Vector3& o) const;
+
     Vector3 center;
     double radius;
     Material* material;

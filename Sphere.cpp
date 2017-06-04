@@ -1,8 +1,11 @@
 //
 // Created by rick on 5/11/17.
 //
+#include <cfloat>
 #include "Sphere.h"
 #include "AABB.h"
+#include "ONB.h"
+#include "PDF.h"
 
 void get_uv(const Vector3& p, double& u, double& v)
 {
@@ -49,6 +52,26 @@ bool Sphere::bounds(double t0, double t1, AABB &bbox) const
 {
     bbox = AABB(center - Vector3(radius, radius, radius), center + Vector3(radius, radius, radius));
     return true;
+}
+
+double Sphere::pdfValue(const Vector3& o, const Vector3& v) const
+{
+   HitRecord rec;
+    if (hit(Ray(o, v), 0.001, DBL_MAX, rec)) {
+        double cosThetaMax = sqrt(1 - radius * radius / (center - o).squared_length());
+        double solidAngle = 2 * M_PI * (1 - cosThetaMax);
+        return 1 / solidAngle;
+    }
+    return 0;
+}
+
+Vector3 Sphere::random(const Vector3& o) const
+{
+    Vector3 direction = center - o;
+    double distSqrd = direction.squared_length();
+    ONB uvw;
+    uvw.buildFromW(direction);
+    return uvw.local(randomToUnitSphere(radius, distSqrd));
 }
 
 Vector3 MovingSphere::center(double time) const

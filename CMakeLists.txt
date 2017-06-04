@@ -33,6 +33,6 @@ set(SOURCE_FILES
         World.h
         World.cpp
         ONB.h
-        ONB.cpp)
+        ONB.cpp PDF.h)
 
 add_executable(pathtracer ${SOURCE_FILES})

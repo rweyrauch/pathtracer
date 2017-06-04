@@ -45,6 +45,22 @@ public:
     virtual bool hit(const Ray& r_in, double t0, double t1, HitRecord& rec) const;
     virtual bool bounds(double t0, double t1, AABB& bbox) const;
 
+    virtual double pdfValue(const Vector3& o, const Vector3& v) const {
+        HitRecord rec;
+        if (hit(Ray(o, v), 0.001, DBL_MAX, rec)) {
+            double area = (x1-x0)*(z1-z0);
+            double distSqrd = rec.t * rec.t * v.squared_length();
+            double cosine = fabs(dot(v, rec.normal) / v.length());
+            return distSqrd / (cosine * area);
+        }
+        else
+            return 0;
+    }
+    virtual Vector3 random(const Vector3& o) const {
+        Vector3 randPoint = Vector3(x0 + drand48()*(x1-x0), k, z0 + drand48()*(z1-z0));
+        return randPoint - o;
+    }
+
     Material* material;
     double x0, x1, z0, z1, k;
 };

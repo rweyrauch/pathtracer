@@ -27,3 +27,19 @@ bool HitableList::bounds(double t0, double t1, AABB &bbox) const
     }
     return true;
 }
+
+double HitableList::pdfValue(const Vector3& o, const Vector3& v) const
+{
+    double weight = 1 / (double)list.size();
+    double sum = 0;
+    for (const auto ip : list) {
+        sum += weight * ip->pdfValue(o, v);
+    }
+    return sum;
+}
+
+Vector3 HitableList::random(const Vector3& o) const
+{
+    int index = int(drand48() * list.size());
+    return list.at(index)->random(o);
+}

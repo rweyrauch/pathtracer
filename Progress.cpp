@@ -40,7 +40,7 @@ Progress::Progress(int totalIterations, const std::string &title, const std::str
     *s++ = '\0';
     fputs(m_buf, stdout);
     fflush(stdout);
-
+    system("tput civis");
     m_start = std::chrono::steady_clock::now();
 }
 
@@ -104,4 +104,5 @@ void Progress::completed()
     int seconds = static_cast<int>(totalSeconds) % 60;
     fprintf(stdout, " (%3d:%02d:%02ds)           \n", hours, minutes, seconds);
     fflush(stdout);
+    system("tput cnorm");
 }

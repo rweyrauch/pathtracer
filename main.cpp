@@ -20,31 +20,27 @@
 #include "Medium.h"
 #include "BVH.h"
 #include "Progress.h"
+#include "PDF.h"
 
-Vector3 color(const Ray& r, Hitable* world, int depth)
+Vector3 color(const Ray& r, Hitable* world, Hitable* lightShape, int depth)
 {
     HitRecord rec;
     if (world->hit(r, 0.001, DBL_MAX, rec)) {
-        Ray scattered;
-        Vector3 albedo(0, 0, 0);
+        ScatterRecord srec;
         Vector3 emitted = rec.material->emitted(r, rec, rec.u, rec.v, rec.p);
-        double pdf;
-        if (depth<50 && rec.material->scatter(r, rec, albedo, scattered, pdf)) {
-            // HACK
-            Vector3 onLight = Vector3(213 + drand48()*(343-213), 554, 227 + drand48()*(332-227));
-            Vector3 toLight = onLight - rec.p;
-            double distSqrd = toLight.squared_length();
-            toLight.make_unit_vector();
-            if (dot(toLight, rec.normal) < 0)
-                return emitted;
-            double lightArea = (343-213)*(332-227);
-            double lightCos = fabs(toLight.y());
-            if (lightCos < 0.000001)
-                return emitted;
-            pdf = distSqrd / (lightCos * lightArea);
-            scattered = Ray(rec.p, toLight, r.time());
-            // HACK
-            return emitted + albedo * rec.material->scatteringPdf(r, rec, scattered) * color(scattered, world, depth+1) / pdf;
+        if (depth<50 && rec.material->scatter(r, rec, srec)) {
+            if (srec.isSpecular) {
+                return srec.attenuation * color(srec.specularRay, world, lightShape, depth+1);
+            }
+            else {
+                HitablePdf plight(lightShape, rec.p);
+                MixturePdf p(&plight, srec.pdf);
+                Ray scattered = Ray(rec.p, p.generate(), r.time());
+                double pdfValue = p.value(scattered.direction());
+                delete srec.pdf;
+                return emitted + srec.attenuation * rec.material->scatteringPdf(r, rec, scattered) *
+                                     color(scattered, world, lightShape, depth + 1) / pdfValue;
+            }
         }
         else {
             return emitted;
@@ -166,16 +162,20 @@ Hitable* cornellBox(double aspect, Camera& camera)
     Material* white = new Lambertian(new ConstantTexture(Vector3(0.73, 0.73, 0.73)));
     Material* green = new Lambertian(new ConstantTexture(Vector3(0.12, 0.45, 0.15)));
     Material* light = new DiffuseLight(new ConstantTexture(Vector3(15, 15, 15)));
+    Material* aluminum = new Metal(Vector3(0.8, 0.85, 0.88), 0.0);
+    Material* glass = new Dielectric(1.5);
 
     list.push_back(new FlipNormals(new YZRectangle(0, 555, 0, 555, 555, green)));
     list.push_back(new YZRectangle(0, 555, 0, 555, 0, red));
-    list.push_back(new XZRectangle(213, 343, 227, 332, 554, light));
+    list.push_back(new FlipNormals(new XZRectangle(213, 343, 227, 332, 554, light)));
     list.push_back(new FlipNormals(new XZRectangle(0, 555, 0, 555, 555, white)));
     list.push_back(new XZRectangle(0, 555, 0, 555, 0, white));
     list.push_back(new FlipNormals(new XYRectangle(0, 555, 0, 555, 555, white)));
 
-    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
-    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295)));
+    //list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
+    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), aluminum), 15), Vector3(265, 0, 295)));
+    list.push_back(new Sphere(Vector3(190, 90, 190), 90, glass));
+
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), Vector3(130, 0, 65)));
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), Vector3(265, 0, 295)));
 
@@ -243,6 +243,13 @@ Hitable* final(double aspect, Camera& camera)
     return new HitableList(list);
 }
 
+inline Vector3 deNan(const Vector3& c) {
+    Vector3 temp = c;
+    if (!(temp[0] == temp[0])) temp[0] = 0;
+    if (!(temp[1] == temp[1])) temp[1] = 0;
+    if (!(temp[2] == temp[2])) temp[2] = 0;
+    return temp;
+}
 
 int main(int argc, char** argv)
 {
@@ -283,6 +290,12 @@ int main(int argc, char** argv)
     Camera cam;
     const double aspect = double(nx)/double(ny);
     Hitable* world = cornellBox(aspect, cam);// cornellBox(); // simpleLight(); //randomScene(); //
+    Hitable* lightShape = new XZRectangle(213, 343, 227, 332, 554, nullptr);
+    Hitable* glassSphere = new Sphere(Vector3(190, 90, 190), 90, nullptr);
+    std::vector<Hitable*> a;
+    a.push_back(lightShape);
+    a.push_back(glassSphere);
+    HitableList* stuff = new HitableList(a);
 
     int numHitables = world->numChildren();
     std::cout << "Total Hitables: " << numHitables << std::endl;
@@ -302,7 +315,7 @@ int main(int argc, char** argv)
                 auto u = (i+drand48())/double(nx);
                 auto v = (j+drand48())/double(ny);
                 Ray r = cam.getRay(u, v);
-                col += color(r, world, 0);
+                col += deNan(color(r, world, stuff, 0));
             }
             col /= double(ns);
             outImage[index++] = Vector3(sqrt(std::max(0.0, col[0])), sqrt(std::max(0.0, col[1])), sqrt(std::max(0.0, col[2])));
