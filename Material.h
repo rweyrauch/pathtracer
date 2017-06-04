@@ -26,7 +26,7 @@ inline double schlick(double cs, double ri)
 {
     double r0 = (1-ri) / (1+ri);
     r0 = r0 * r0;
-    return r0 * (1-r0) * pow((1-cs), 5);
+    return r0 + (1-r0) * pow((1-cs), 5);
 }
 
 class Material
@@ -100,11 +100,11 @@ public:
 
     virtual bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const
     {
+        srec.isSpecular = true;
+        srec.pdf = nullptr;
+        srec.attenuation = Vector3(1, 1, 1);
         Vector3 outwardNormal;
         Vector3 reflected = reflect(r_in.direction(), rec.normal);
-        srec.pdf = nullptr;
-        srec.isSpecular = true;
-        srec.attenuation = Vector3(1, 1, 1);
         Vector3 refracted;
         double reflectProb, cosine;
         double niOverNt;
