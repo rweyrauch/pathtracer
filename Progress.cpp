@@ -28,7 +28,7 @@ Progress::Progress(int totalIterations, const std::string &title, const std::str
     int length = GetTerminalWidth() - 42;
     m_total = std::max(2, length - static_cast<int>(title.size()) - static_cast<int>(m_statusLabel.size()));
 
-    int bufLen = title.size() + m_statusLabel.size() + m_total + 64;
+    auto bufLen = title.size() + m_statusLabel.size() + m_total + 64;
     m_buf = new char[bufLen];
     snprintf(m_buf, bufLen, "\r%s: [", title.c_str());
     m_curSpace = m_buf + strlen(m_buf);

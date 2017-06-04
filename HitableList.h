@@ -12,16 +12,18 @@ class HitableList : public Hitable {
 public:
     HitableList() { }
 
-    HitableList(const std::vector<Hitable*>& l)
-            :list(l) { }
+    HitableList(const std::vector<Hitable*>& l) :
+        list(l) { }
 
     virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const
     {
         HitRecord temp_rec;
         bool hit_anything = false;
         double closest_so_far = tmax;
-        for (auto ip : list) {
-            if (ip->hit(r, tmin, closest_so_far, temp_rec)) {
+        for (auto ip : list)
+        {
+            if (ip->hit(r, tmin, closest_so_far, temp_rec))
+            {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 rec = temp_rec;

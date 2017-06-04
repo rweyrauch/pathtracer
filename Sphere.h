@@ -13,11 +13,10 @@ class Sphere : public Hitable {
 public:
     Sphere() { }
 
-    Sphere(const Vector3& cen, double r, Material* m)
-            :
-            center(cen),
-            radius(r),
-            material(m) { }
+    Sphere(const Vector3& cen, double r, Material* m) :
+        center(cen),
+        radius(r),
+        material(m) { }
 
     virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const;
     virtual bool bounds(double t0, double t1, AABB& bbox) const;
@@ -35,8 +34,7 @@ class MovingSphere : public Hitable
 {
 public:
     MovingSphere() {}
-    MovingSphere(const Vector3& cen0, const Vector3& cen1, double t0, double t1, double r, Material* mtl)
-        :
+    MovingSphere(const Vector3& cen0, const Vector3& cen1, double t0, double t1, double r, Material* mtl) :
         center0(cen0),
         center1(cen1),
         time0(t0),

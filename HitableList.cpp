@@ -32,7 +32,8 @@ double HitableList::pdfValue(const Vector3& o, const Vector3& v) const
 {
     double weight = 1 / (double)list.size();
     double sum = 0;
-    for (const auto ip : list) {
+    for (const auto ip : list)
+    {
         sum += weight * ip->pdfValue(o, v);
     }
     return sum;
@@ -40,6 +41,6 @@ double HitableList::pdfValue(const Vector3& o, const Vector3& v) const
 
 Vector3 HitableList::random(const Vector3& o) const
 {
-    int index = int(drand48() * list.size());
+    auto index = size_t(drand48() * list.size());
     return list.at(index)->random(o);
 }

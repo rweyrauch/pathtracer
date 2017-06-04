@@ -20,11 +20,13 @@ bool BVH::hit(const Ray &r, double tmin, double tmax, HitRecord &rec) const
                 rec = rightRec;
             return true;
         }
-        else if (hitLeft) {
+        else if (hitLeft)
+        {
             rec = leftRec;
             return true;
         }
-        else if (hitRight) {
+        else if (hitRight)
+        {
             rec = rightRec;
             return true;
         }
@@ -45,7 +47,8 @@ BVH::BVH(std::vector<Hitable *> &list, double time0, double time1)
     int axis = int(3 * drand48());
     if (axis == 0)
     {
-        auto boxXCompare = [](Hitable* a, Hitable* b)->bool {
+        auto boxXCompare = [](Hitable* a, Hitable* b)->bool
+        {
             AABB boxLeft, boxRight;
             if (!a->bounds(0, 0, boxLeft) || !b->bounds(0, 0, boxRight))
                 std::cerr << "No bounding box in BVH construction." << std::endl;
@@ -55,7 +58,8 @@ BVH::BVH(std::vector<Hitable *> &list, double time0, double time1)
     }
     else if (axis == 1)
     {
-        auto boxYCompare = [](Hitable* a, Hitable* b)->bool {
+        auto boxYCompare = [](Hitable* a, Hitable* b)->bool
+        {
             AABB boxLeft, boxRight;
             if (!a->bounds(0, 0, boxLeft) || !b->bounds(0, 0, boxRight))
                 std::cerr << "No bounding box in BVH construction." << std::endl;
@@ -65,7 +69,8 @@ BVH::BVH(std::vector<Hitable *> &list, double time0, double time1)
     }
     else
     {
-        auto boxZCompare = [](Hitable* a, Hitable* b)->bool {
+        auto boxZCompare = [](Hitable* a, Hitable* b)->bool
+        {
             AABB boxLeft, boxRight;
             if (!a->bounds(0, 0, boxLeft) || !b->bounds(0, 0, boxRight))
                 std::cerr << "No bounding box in BVH construction." << std::endl;

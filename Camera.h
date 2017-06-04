@@ -9,44 +9,45 @@
 #include "Ray.h"
 #include "Material.h"
 
-class Camera {
+class Camera
+{
 public:
-    Camera() {}
+    Camera()
+    {}
 
-    Camera(double vfov, double aspect)
-            :
-            origin(0, 0, 0),
-            lowerLeftCorner(),
-            horizontal(),
-            vertical()
+    Camera(double vfov, double aspect) :
+        origin(0, 0, 0),
+        lowerLeftCorner(),
+        horizontal(),
+        vertical()
     {
-        double theta = vfov*M_PI/180;
-        double halfHeight = tan(theta/2);
-        double halfWidth = aspect*halfHeight;
+        double theta = vfov * M_PI / 180;
+        double halfHeight = tan(theta / 2);
+        double halfWidth = aspect * halfHeight;
         lowerLeftCorner = Vector3(-halfWidth, -halfHeight, -1);
-        horizontal = Vector3(2*halfWidth, 0, 0);
-        vertical = Vector3(0, 2*halfHeight, 0);
+        horizontal = Vector3(2 * halfWidth, 0, 0);
+        vertical = Vector3(0, 2 * halfHeight, 0);
     }
 
-    Camera(const Vector3& from, const Vector3& to, const Vector3& vup, double vfov, double aspect, double aperture, double focal_dist, double t0 = 0, double t1 = 1)
-            :
-            origin(from),
-            lowerLeftCorner(),
-            horizontal(),
-            vertical(),
-            time0(t0),
-            time1(t1)
+    Camera(const Vector3 &from, const Vector3 &to, const Vector3 &vup, double vfov, double aspect, double aperture, double focal_dist, double t0 = 0,
+           double t1 = 1) :
+        origin(from),
+        lowerLeftCorner(),
+        horizontal(),
+        vertical(),
+        time0(t0),
+        time1(t1)
     {
         lens_radius = aperture / 2;
-        double theta = vfov*M_PI/180;
-        double halfHeight = tan(theta/2);
-        double halfWidth = aspect*halfHeight;
-        w = unit_vector(from-to);
+        double theta = vfov * M_PI / 180;
+        double halfHeight = tan(theta / 2);
+        double halfWidth = aspect * halfHeight;
+        w = unit_vector(from - to);
         u = unit_vector(cross(vup, w));
         v = cross(w, u);
         lowerLeftCorner = origin - halfWidth * focal_dist * u - halfHeight * focal_dist * v - focal_dist * w;
-        horizontal = 2*halfWidth*focal_dist*u;
-        vertical = 2*halfHeight*focal_dist*v;
+        horizontal = 2 * halfWidth * focal_dist * u;
+        vertical = 2 * halfHeight * focal_dist * v;
     }
 
     Ray getRay(double s, double t)

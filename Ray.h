@@ -11,11 +11,10 @@ class Ray {
 public:
     Ray() { }
 
-    Ray(const Vector3& o, const Vector3& d, double t = 0)
-            :
-            m_origin(o),
-            m_dir(d),
-            m_time(t) { }
+    Ray(const Vector3& o, const Vector3& d, double t = 0) :
+        m_origin(o),
+        m_dir(d),
+        m_time(t) { }
 
     const Vector3& origin() const { return m_origin; }
 

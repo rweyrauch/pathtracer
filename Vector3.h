@@ -12,8 +12,8 @@ class Vector3 {
 public:
     Vector3() { }
 
-    Vector3(double e0, double e1, double e2)
-            :e{e0, e1, e2} { }
+    Vector3(double e0, double e1, double e2) :
+        e{e0, e1, e2} { }
 
     inline double x() const { return e[0]; }
 
@@ -101,7 +101,7 @@ public:
 
 inline void Vector3::make_unit_vector()
 {
-    double k = 1.0/length();
+    double k = 1.0 / length();
     e[0] *= k;
     e[1] *= k;
     e[2] *= k;
@@ -156,21 +156,22 @@ inline Vector3 cross(const Vector3& v1, const Vector3& v2)
 
 inline Vector3 unit_vector(const Vector3& v)
 {
-    return v/v.length();
+    return v / v.length();
 }
 
 inline Vector3 reflect(const Vector3& v, const Vector3& n)
 {
-    return v-2*dot(v, n)*n;
+    return v - 2 * dot(v, n) * n;
 }
 
 inline bool refract(const Vector3& v, const Vector3& n, double niOverNt, Vector3& refracted)
 {
     Vector3 uv = unit_vector(v);
     double dt = dot(uv, n);
-    double discriminant = 1-niOverNt*niOverNt*(1-dt*dt);
-    if (discriminant>0) {
-        refracted = niOverNt*(uv-n*dt)-n*sqrt(discriminant);
+    double discriminant = 1 - niOverNt * niOverNt * (1 - dt * dt);
+    if (discriminant > 0)
+    {
+        refracted = niOverNt * (uv - n * dt) - n * sqrt(discriminant);
         return true;
     }
     return false;

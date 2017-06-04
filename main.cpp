@@ -20,7 +20,6 @@
 #include "Medium.h"
 #include "BVH.h"
 #include "Progress.h"
-#include "PDF.h"
 
 Vector3 color(const Ray& r, Hitable* world, Hitable* lightShape, int depth)
 {
@@ -172,9 +171,9 @@ Hitable* cornellBox(double aspect, Camera& camera)
     list.push_back(new XZRectangle(0, 555, 0, 555, 0, white));
     list.push_back(new FlipNormals(new XYRectangle(0, 555, 0, 555, 555, white)));
 
-    //list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
+    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
     list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), aluminum), 15), Vector3(265, 0, 295)));
-    list.push_back(new Sphere(Vector3(190, 90, 190), 90, glass));
+    //list.push_back(new Sphere(Vector3(190, 90, 190), 90, glass));
 
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), Vector3(130, 0, 65)));
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), Vector3(265, 0, 295)));
@@ -294,7 +293,7 @@ int main(int argc, char** argv)
     Hitable* glassSphere = new Sphere(Vector3(190, 90, 190), 90, nullptr);
     std::vector<Hitable*> a;
     a.push_back(lightShape);
-    a.push_back(glassSphere);
+    //a.push_back(glassSphere);
     HitableList* stuff = new HitableList(a);
 
     int numHitables = world->numChildren();

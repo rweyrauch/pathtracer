@@ -12,8 +12,7 @@ class AABB
 {
 public:
     AABB() {}
-    AABB(const Vector3& a, const Vector3& b)
-        :
+    AABB(const Vector3& a, const Vector3& b) :
         m_min(a),
         m_max(b) {}
 
