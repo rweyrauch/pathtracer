@@ -16,10 +16,13 @@ public:
         e{e0, e1, e2} { }
 
     inline double x() const { return e[0]; }
+    inline double& x() { return e[0]; }
 
     inline double y() const { return e[1]; }
+    inline double& y() { return e[1]; }
 
     inline double z() const { return e[2]; }
+    inline double& z() { return e[2]; }
 
     inline double r() const { return e[0]; }
 
@@ -183,7 +186,7 @@ inline std::istream& operator>>(std::istream& is, Vector3& t)
     return is;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const Vector3 t)
+inline std::ostream& operator<<(std::ostream& os, const Vector3& t)
 {
     os << t.e[0] << " " << t.e[1] << " " << t.e[2];
     return os;

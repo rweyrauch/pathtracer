@@ -20,6 +20,7 @@
 #include "Medium.h"
 #include "BVH.h"
 #include "Progress.h"
+#include "Triangle.h"
 
 Vector3 color(const Ray& r, Hitable* world, Hitable* lightShape, int depth)
 {
@@ -173,6 +174,58 @@ Hitable* cornellBox(double aspect, Camera& camera)
 
     list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
     list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), aluminum), 15), Vector3(265, 0, 295)));
+    //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), aluminum), Vector3(265, 0, 295)));
+    //list.push_back(new Sphere(Vector3(190, 90, 190), 90, glass));
+
+    //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), Vector3(130, 0, 65)));
+    //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), Vector3(265, 0, 295)));
+
+    //Hitable* b1 = new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65));
+    //Hitable* b2 = new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295));
+
+    //list.push_back(new ConstantMedium(b1, 0.01, new ConstantTexture(Vector3(1, 1, 1))));
+    //list.push_back(new ConstantMedium(b2, 0.01, new ConstantTexture(Vector3(0, 0, 0))));
+
+    return new HitableList(list);
+}
+
+Hitable* cornellBoxTris(double aspect, Camera& camera)
+{
+    const Vector3 lookFrom(278, 278, -800);
+    const Vector3 lookAt(278, 278, 0);
+    const double dist_to_focus = 10.0;
+    const double aperture = 0.0;
+    camera = Camera(lookFrom, lookAt, Vector3(0, 1, 0), 40, aspect, aperture, dist_to_focus);
+
+    std::vector<Hitable*> list;
+
+    Material* red = new Lambertian(new ConstantTexture(Vector3(0.65, 0.05, 0.05)));
+    Material* white = new Lambertian(new ConstantTexture(Vector3(0.73, 0.73, 0.73)));
+    Material* green = new Lambertian(new ConstantTexture(Vector3(0.12, 0.45, 0.15)));
+    Material* light = new DiffuseLight(new ConstantTexture(Vector3(15, 15, 15)));
+    Material* aluminum = new Metal(Vector3(0.8, 0.85, 0.88), 0.0);
+    Material* glass = new Dielectric(1.5);
+
+    //list.push_back(new FlipNormals(new YZRectangle(0, 555, 0, 555, 555, green)));
+    //list.push_back(new YZRectangle(0, 555, 0, 555, 0, red));
+    list.push_back(new FlipNormals(new XZRectangle(213, 343, 227, 332, 554, light)));
+    list.push_back(new FlipNormals(new XZRectangle(0, 555, 0, 555, 555, white)));
+    list.push_back(new XZRectangle(0, 555, 0, 555, 0, white));
+    list.push_back(new FlipNormals(new XYRectangle(0, 555, 0, 555, 555, white)));
+
+    list.push_back(new Triangle(Vector3(555, 0, 0), Vector2(0, 0), Vector3(555, 555, 555), Vector2(1, 1),
+                                Vector3(555, 555, 0), Vector2(1, 0), green));
+    list.push_back(new Triangle(Vector3(555, 555, 555), Vector2(1, 1), Vector3(555, 0, 0), Vector2(0, 0),
+                                Vector3(555, 0, 555), Vector2(0, 1), green));
+
+    list.push_back(new Triangle(Vector3(0, 0, 0), Vector2(0, 0), Vector3(0, 555, 0), Vector2(1, 0),
+                                Vector3(0, 555, 555), Vector2(1, 1), red));
+    list.push_back(new Triangle(Vector3(0, 555, 555), Vector2(1, 1), Vector3(0, 0, 555), Vector2(0, 1),
+                                Vector3(0, 0, 0), Vector2(0, 0), red));
+
+    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
+    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), aluminum), 15), Vector3(265, 0, 295)));
+    //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), aluminum), Vector3(265, 0, 295)));
     //list.push_back(new Sphere(Vector3(190, 90, 190), 90, glass));
 
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), Vector3(130, 0, 65)));
@@ -288,7 +341,7 @@ int main(int argc, char** argv)
 
     Camera cam;
     const double aspect = double(nx)/double(ny);
-    Hitable* world = cornellBox(aspect, cam);// cornellBox(); // simpleLight(); //randomScene(); //
+    Hitable* world = cornellBoxTris(aspect, cam);// cornellBox(); // simpleLight(); //randomScene(); //
     Hitable* lightShape = new XZRectangle(213, 343, 227, 332, 554, nullptr);
     Hitable* glassSphere = new Sphere(Vector3(190, 90, 190), 90, nullptr);
     std::vector<Hitable*> a;
