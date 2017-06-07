@@ -21,6 +21,9 @@
 #include "BVH.h"
 #include "Progress.h"
 #include "Triangle.h"
+#include "AmbientLight.h"
+
+AmbientLight* g_ambientLight = new ConstantAmbient();
 
 Vector3 color(const Ray& r, Hitable* world, Hitable* lightShape, int depth)
 {
@@ -58,10 +61,7 @@ Vector3 color(const Ray& r, Hitable* world, Hitable* lightShape, int depth)
         }
     }
     else {
-        //Vector3 unit_dir = unit_vector(r.direction());
-        //double t = 0.5*(unit_dir.y()+1.0);
-        //return (1.0-t)*Vector3(1.0, 1.0, 1.0)+t*Vector3(0.5, 0.7, 1.0);
-        return Vector3(0, 0, 0);
+        return g_ambientLight->emitted(r);
     }
 }
 
@@ -77,6 +77,10 @@ Hitable* twoSpheres(double aspect, Camera& camera, std::vector<Hitable*>& lights
     std::vector<Hitable*> list;
     list.push_back(new Sphere(Vector3(0,-10, 0), 10, new Lambertian(checker)));
     list.push_back(new Sphere(Vector3(0, 10, 0), 10, new Lambertian(checker)));
+
+    delete g_ambientLight;
+    g_ambientLight = new SkyAmbient();
+
     return new HitableList(list);
 }
 
@@ -119,6 +123,9 @@ Hitable* randomScene(double aspect, Camera& camera, std::vector<Hitable*>& light
     list.push_back(new Sphere(Vector3(-4, 1, 0), 1.0, new Lambertian(new ConstantTexture(Vector3(0.4, 0.2, 0.1)))));
     list.push_back(new Sphere(Vector3(4, 1, 0), 1.0, new Metal(Vector3(0.7, 0.6, 0.5), 0.0)));
 
+    delete g_ambientLight;
+    g_ambientLight = new SkyAmbient();
+
     return new HitableList(list);
 }
 
@@ -137,6 +144,10 @@ Hitable* perlinSpheres(double aspect, Camera& camera, std::vector<Hitable*>& lig
     std::vector<Hitable*> list;
     list.push_back(new Sphere(Vector3(0,-1000, 0), 1000, new Lambertian(noise)));
     list.push_back(new Sphere(Vector3(0, 2, 0), 2, new Lambertian(new ImageTexture(tex_data, nx, ny))));
+
+    delete g_ambientLight;
+    g_ambientLight = new SkyAmbient();
+
     return new HitableList(list);
 }
 
@@ -326,6 +337,23 @@ inline Vector3 deNan(const Vector3& c) {
     return temp;
 }
 
+void renderLine(int line, Vector3* outLine, int nx, int ny, int ns, Camera& cam, Hitable* world, Hitable* lightShapes)
+{
+    for (int x = 0; x < nx; x++)
+    {
+        Vector3 col(0, 0, 0);
+        for (int s = 0; s<ns; s++)
+        {
+            auto u = (x+drand48())/double(nx);
+            auto v = (line+drand48())/double(ny);
+            Ray r = cam.getRay(u, v);
+            col += deNan(color(r, world, lightShapes, 0));
+        }
+        col /= double(ns);
+        outLine[x] = Vector3(sqrt(std::max(0.0, col[0])), sqrt(std::max(0.0, col[1])), sqrt(std::max(0.0, col[2])));
+    }
+}
+
 int main(int argc, char** argv)
 {
     cxxopts::Options options("pathtracer", "Implementation of Peter Shirley's Raytracing in One Weekend book series.");
@@ -365,7 +393,7 @@ int main(int argc, char** argv)
     Camera cam;
     const double aspect = double(nx)/double(ny);
     std::vector<Hitable*> lights;
-    Hitable* world = final(aspect, cam, lights);// cornellBox(); // simpleLight(); //randomScene(); //
+    Hitable* world = randomScene(aspect, cam, lights);// cornellBox(); // simpleLight(); //randomScene(); //
     HitableList* lightShapes = nullptr;
     if (!lights.empty())
         lightShapes = new HitableList(lights);
@@ -383,22 +411,13 @@ int main(int argc, char** argv)
     Progress progress(nx*ny, "PathTracers");
 
     int index = 0;
-    for (int j = ny-1; j>=0; j--)
+    for (int j = 0; j < ny; j++)
     {
-        for (int i = 0; i<nx; i++)
-        {
-            Vector3 col(0, 0, 0);
-            for (int s = 0; s<ns; s++)
-            {
-                auto u = (i+drand48())/double(nx);
-                auto v = (j+drand48())/double(ny);
-                Ray r = cam.getRay(u, v);
-                col += deNan(color(r, world, lightShapes, 0));
-            }
-            col /= double(ns);
-            outImage[index++] = Vector3(sqrt(std::max(0.0, col[0])), sqrt(std::max(0.0, col[1])), sqrt(std::max(0.0, col[2])));
-            progress.update(1);
-        }
+        Vector3* outLine = outImage + (nx * j);
+        const int line = ny - j - 1;
+        renderLine(line, outLine, nx, ny, ns, cam, world, lightShapes);
+
+        progress.update(nx);
     }
 
     progress.completed();
