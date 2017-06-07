@@ -337,6 +337,63 @@ inline Vector3 deNan(const Vector3& c) {
     return temp;
 }
 
+void writeImage(const std::string& outFile, const Vector3* outImage, int nx, int ny)
+{
+    auto extStart = outFile.rfind('.');
+    if (extStart != std::string::npos)
+    {
+        extStart++;
+        std::string ext = outFile.substr(extStart);
+        if (ext == "ppm")
+        {
+            std::ofstream of(outFile.c_str());
+            if (of.is_open())
+            {
+                of << "P3\n" << nx << " " << ny << "\n255\n";
+
+                for (int i = 0; i < nx * ny; i++)
+                {
+                    Vector3 col = outImage[i];
+
+                    int ir = int(255.99 * col[0]);
+                    int ig = int(255.99 * col[1]);
+                    int ib = int(255.99 * col[2]);
+
+                    of << ir << " " << ig << " " << ib << "\n";
+                }
+            }
+            of.close();
+        }
+        else if (ext == "hdr")
+        {
+            stbi_write_hdr(outFile.c_str(), nx, ny, 3, (const float*)outImage);
+        }
+        else
+        {
+            unsigned char* outBytes = new unsigned char[nx * ny * 3];
+            unsigned char* currentOut = outBytes;
+            for (int i = 0; i < nx * ny; i++)
+            {
+                const Vector3& col = outImage[i];
+                int ir = int(255.99 * col[0]);
+                int ig = int(255.99 * col[1]);
+                int ib = int(255.99 * col[2]);
+                *currentOut++ = (unsigned char)ir;
+                *currentOut++ = (unsigned char)ig;
+                *currentOut++ = (unsigned char)ib;
+            }
+            if (ext == "png")
+                stbi_write_png(outFile.c_str(), nx, ny, 3, outBytes, nx * 3);
+            else if (ext == "tga")
+                stbi_write_tga(outFile.c_str(), nx, ny, 3, outBytes);
+            else if (ext == "bmp")
+                stbi_write_bmp(outFile.c_str(), nx, ny, 3, outBytes);
+
+            delete[] outBytes;
+        }
+    }
+}
+
 void renderLine(int line, Vector3* outLine, int nx, int ny, int ns, Camera& cam, Hitable* world, Hitable* lightShapes)
 {
     for (int x = 0; x < nx; x++)
@@ -374,7 +431,7 @@ int main(int argc, char** argv)
     int ns = 100 * 100;
     int numThreads = 1;
 
-    std::string outFile("foo.ppm");
+    std::string outFile("outputImage.ppm");
 
     if (options.count("width"))
         nx = options["width"].as<int>();
@@ -430,23 +487,7 @@ int main(int argc, char** argv)
 
     progress.completed();
 
-    std::ofstream of(outFile.c_str());
-    if (of.is_open())
-    {
-        of << "P3\n" << nx << " " << ny << "\n255\n";
-
-        for (int i = 0; i < nx * ny; i++)
-        {
-            Vector3 col = outImage[i];
-
-            int ir = int(255.99 * col[0]);
-            int ig = int(255.99 * col[1]);
-            int ib = int(255.99 * col[2]);
-
-            of << ir << " " << ig << " " << ib << "\n";
-        }
-    }
-    of.close();
+    writeImage(outFile, outImage, nx, ny);
 
     delete[] outImage;
 
