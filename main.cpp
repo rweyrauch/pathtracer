@@ -362,6 +362,7 @@ int main(int argc, char** argv)
         ("w,width", "Output width.", cxxopts::value<int>())
         ("h,height", "Output height.", cxxopts::value<int>())
         ("n,numsamples", "Number of sample rays per pixel.", cxxopts::value<int>())
+        ("t,threads", "Number of render threads.", cxxopts::value<int>())
         ("f,file", "Output filename.", cxxopts::value<std::string>());
 
     options.parse(argc, argv);
@@ -371,6 +372,7 @@ int main(int argc, char** argv)
     int nx = 800;
     int ny = 800;
     int ns = 100 * 100;
+    int numThreads = 1;
 
     std::string outFile("foo.ppm");
 
@@ -382,6 +384,8 @@ int main(int argc, char** argv)
         ns = options["numsamples"].as<int>();
     if (options.count("file"))
         outFile = options["file"].as<std::string>();
+    if (options.count("threads"))
+        numThreads = options["numthreads"].as<int>();
 
     if (quick)
     {
@@ -411,13 +415,17 @@ int main(int argc, char** argv)
     Progress progress(nx*ny, "PathTracers");
 
     int index = 0;
+    #pragma omp parallel for if(numThreads)
     for (int j = 0; j < ny; j++)
     {
         Vector3* outLine = outImage + (nx * j);
         const int line = ny - j - 1;
         renderLine(line, outLine, nx, ny, ns, cam, world, lightShapes);
 
-        progress.update(nx);
+        #pragma omp critical(progress)
+        {
+            progress.update(nx);
+        }
     }
 
     progress.completed();
