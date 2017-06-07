@@ -4,10 +4,10 @@
 
 #include "Texture.h"
 
-Vector3 ImageTexture::value(double u, double v, const Vector3 &p) const
+Vector3 ImageTexture::value(const Vector2& uv, const Vector3 &p) const
 {
-    int i = u * nx;
-    int j = (1 - v) * ny - 0.001;
+    int i = uv.u() * nx;
+    int j = (1 - uv.v()) * ny - 0.001;
     i = std::max(0, i);
     j = std::max(0, j);
     i = std::min(i, nx-1);

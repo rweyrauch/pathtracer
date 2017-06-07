@@ -8,11 +8,12 @@
 #include <cassert>
 #include "Perlin.h"
 #include "Noise.h"
+#include "Vector2.h"
 
 class Texture
 {
 public:
-    virtual Vector3 value(double u, double v, const Vector3 &p) const = 0;
+    virtual Vector3 value(const Vector2& uv, const Vector3 &p) const = 0;
 };
 
 class ConstantTexture : public Texture
@@ -25,7 +26,7 @@ public:
         color(c)
     {}
 
-    virtual Vector3 value(double u, double v, const Vector3 &p) const
+    virtual Vector3 value(const Vector2& uv, const Vector3 &p) const
     {
         return color;
     }
@@ -44,13 +45,13 @@ public:
         even(t0)
     {}
 
-    virtual Vector3 value(double u, double v, const Vector3 &p) const
+    virtual Vector3 value(const Vector2& uv, const Vector3 &p) const
     {
         double sines = sin(10 * p.x()) * sin(10 * p.y()) * sin(10 * p.z());
         if (sines < 0)
-            return odd->value(u, v, p);
+            return odd->value(uv, p);
         else
-            return even->value(u, v, p);
+            return even->value(uv, p);
     }
 
     Texture *odd;
@@ -64,7 +65,7 @@ public:
         scale(sc)
     {}
 
-    virtual Vector3 value(double u, double v, const Vector3 &p) const
+    virtual Vector3 value(const Vector2& uv, const Vector3 &p) const
     {
         //double n = (Noise(p) + 1) / 2;
         //double n = Turbulence(scale * p);
@@ -89,7 +90,7 @@ public:
         ny(Ny)
     {}
 
-    virtual Vector3 value(double u, double v, const Vector3 &p) const;
+    virtual Vector3 value(const Vector2& uv, const Vector3 &p) const;
 
     const unsigned char *data;
     int nx, ny;

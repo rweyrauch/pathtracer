@@ -16,12 +16,16 @@ public:
         e{e0, e1} { }
 
     inline double x() const { return e[0]; }
+    inline double& x() { return e[0]; }
 
     inline double y() const { return e[1]; }
+    inline double& y() { return e[1]; }
 
     inline double u() const { return e[0]; }
+    inline double& u() { return e[0]; }
 
     inline double v() const { return e[1]; }
+    inline double& v() { return e[1]; }
 
     inline const Vector2& operator+() const { return *this; }
 

@@ -7,12 +7,12 @@
 #include "ONB.h"
 #include "PDF.h"
 
-void get_uv(const Vector3& p, double& u, double& v)
+void get_uv(const Vector3& p, Vector2& uv)
 {
     double phi = atan2(p.z(), p.x());
     double theta = asin(p.y());
-    u = 1 - (phi + M_PI) / (2 * M_PI);
-    v = (theta + M_PI/2) / M_PI;
+    uv.u() = 1 - (phi + M_PI) / (2 * M_PI);
+    uv.v() = (theta + M_PI/2) / M_PI;
 }
 
 bool Sphere::hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const
@@ -31,7 +31,7 @@ bool Sphere::hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const
             rec.p = r.pointAt(rec.t);
             rec.normal = (rec.p - center) / radius;
             rec.material = material;
-            get_uv(rec.normal, rec.u, rec.v);
+            get_uv(rec.normal, rec.uv);
             return true;
         }
         temp = (-b + sqrt(discriminant)) / a;
@@ -41,7 +41,7 @@ bool Sphere::hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const
             rec.p = r.pointAt(rec.t);
             rec.normal = (rec.p - center) / radius;
             rec.material = material;
-            get_uv(rec.normal, rec.u, rec.v);
+            get_uv(rec.normal, rec.uv);
             return true;
         }
     }
@@ -95,7 +95,7 @@ bool MovingSphere::hit(const Ray &ray, double t_min, double t_max, HitRecord &re
             rec.p = ray.pointAt(rec.t);
             rec.normal = (rec.p - center(ray.time())) / radius;
             rec.material = material;
-            get_uv(rec.p, rec.u, rec.v);
+            get_uv(rec.p, rec.uv);
             return true;
         }
         temp = (-b + sqrt(discriminant)) / a;
@@ -105,7 +105,7 @@ bool MovingSphere::hit(const Ray &ray, double t_min, double t_max, HitRecord &re
             rec.p = ray.pointAt(rec.t);
             rec.normal = (rec.p - center(ray.time())) / radius;
             rec.material = material;
-            get_uv(rec.p, rec.u, rec.v);
+            get_uv(rec.p, rec.uv);
             return true;
         }
     }

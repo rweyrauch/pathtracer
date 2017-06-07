@@ -7,6 +7,7 @@
 
 #include "Vector3.h"
 #include "Ray.h"
+#include "Vector2.h"
 
 class Material;
 
@@ -18,7 +19,7 @@ struct HitRecord
     Vector3 p;
     Vector3 normal;
     Material *material;
-    double u, v;
+    Vector2 uv;
 };
 
 class Hitable

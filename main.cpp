@@ -27,19 +27,30 @@ Vector3 color(const Ray& r, Hitable* world, Hitable* lightShape, int depth)
     HitRecord rec;
     if (world->hit(r, 0.001, DBL_MAX, rec)) {
         ScatterRecord srec;
-        Vector3 emitted = rec.material->emitted(r, rec, rec.u, rec.v, rec.p);
+        Vector3 emitted = rec.material->emitted(r, rec, rec.uv, rec.p);
         if (depth<50 && rec.material->scatter(r, rec, srec)) {
             if (srec.isSpecular) {
                 return srec.attenuation * color(srec.specularRay, world, lightShape, depth+1);
             }
             else {
-                HitablePdf plight(lightShape, rec.p);
-                MixturePdf p(&plight, srec.pdf);
-                Ray scattered = Ray(rec.p, p.generate(), r.time());
-                double pdfValue = p.value(scattered.direction());
-                delete srec.pdf;
-                return emitted + srec.attenuation * rec.material->scatteringPdf(r, rec, scattered) *
+                if (lightShape != nullptr)
+                {
+                    HitablePdf plight(lightShape, rec.p);
+                    MixturePdf p(&plight, srec.pdf);
+                    Ray scattered = Ray(rec.p, p.generate(), r.time());
+                    double pdfValue = p.value(scattered.direction());
+                    delete srec.pdf;
+                    return emitted + srec.attenuation * rec.material->scatteringPdf(r, rec, scattered) *
                                      color(scattered, world, lightShape, depth + 1) / pdfValue;
+                }
+                else
+                {
+                    Ray scattered = Ray(rec.p, srec.pdf->generate(), r.time());
+                    double pdfValue = srec.pdf->value(scattered.direction());
+                    delete srec.pdf;
+                    return emitted + srec.attenuation * rec.material->scatteringPdf(r, rec, scattered) *
+                                     color(scattered, world, lightShape, depth + 1) / pdfValue;
+                }
             }
         }
         else {
@@ -54,7 +65,7 @@ Vector3 color(const Ray& r, Hitable* world, Hitable* lightShape, int depth)
     }
 }
 
-Hitable* twoSpheres(double aspect, Camera& camera)
+Hitable* twoSpheres(double aspect, Camera& camera, std::vector<Hitable*>& lights)
 {
     const Vector3 lookFrom(13, 2, 3);
     const Vector3 lookAt(0, 0, 0);
@@ -69,7 +80,7 @@ Hitable* twoSpheres(double aspect, Camera& camera)
     return new HitableList(list);
 }
 
-Hitable* randomScene(double aspect, Camera& camera)
+Hitable* randomScene(double aspect, Camera& camera, std::vector<Hitable*>& lights)
 {
     const Vector3 lookFrom(13, 2, 3);
     const Vector3 lookAt(0, 0, 0);
@@ -111,7 +122,7 @@ Hitable* randomScene(double aspect, Camera& camera)
     return new HitableList(list);
 }
 
-Hitable* perlinSpheres(double aspect, Camera& camera)
+Hitable* perlinSpheres(double aspect, Camera& camera, std::vector<Hitable*>& lights)
 {
     const Vector3 lookFrom(13, 2, 3);
     const Vector3 lookAt(0, 0, 0);
@@ -129,7 +140,7 @@ Hitable* perlinSpheres(double aspect, Camera& camera)
     return new HitableList(list);
 }
 
-Hitable* simpleLight(double aspect, Camera& camera)
+Hitable* simpleLight(double aspect, Camera& camera, std::vector<Hitable*>& lights)
 {
     const Vector3 lookFrom(13, 2, 3);
     const Vector3 lookAt(0, 0, 0);
@@ -145,10 +156,13 @@ Hitable* simpleLight(double aspect, Camera& camera)
     list.push_back(new Sphere(Vector3(0, 7, 0), 2, new DiffuseLight(new ConstantTexture(Vector3(4, 4, 4)))));
     list.push_back(new XYRectangle(3, 5, 1, 3, -2, new DiffuseLight(new ConstantTexture(Vector3(4, 4, 4)))));
 
+    lights.push_back(new Sphere(Vector3(0, 7, 0), 2, nullptr));
+    lights.push_back(new XYRectangle(3, 5, 1, 3, -2, nullptr));
+
     return new HitableList(list);
 }
 
-Hitable* cornellBox(double aspect, Camera& camera)
+Hitable* cornellBox(double aspect, Camera& camera, std::vector<Hitable*>& lights)
 {
     const Vector3 lookFrom(278, 278, -800);
     const Vector3 lookAt(278, 278, 0);
@@ -186,10 +200,12 @@ Hitable* cornellBox(double aspect, Camera& camera)
     //list.push_back(new ConstantMedium(b1, 0.01, new ConstantTexture(Vector3(1, 1, 1))));
     //list.push_back(new ConstantMedium(b2, 0.01, new ConstantTexture(Vector3(0, 0, 0))));
 
+    lights.push_back(new XZRectangle(213, 343, 227, 332, 554, nullptr));
+
     return new HitableList(list);
 }
 
-Hitable* cornellBoxTris(double aspect, Camera& camera)
+Hitable* cornellBoxTris(double aspect, Camera& camera, std::vector<Hitable*>& lights)
 {
     const Vector3 lookFrom(278, 278, -800);
     const Vector3 lookAt(278, 278, 0);
@@ -237,10 +253,12 @@ Hitable* cornellBoxTris(double aspect, Camera& camera)
     //list.push_back(new ConstantMedium(b1, 0.01, new ConstantTexture(Vector3(1, 1, 1))));
     //list.push_back(new ConstantMedium(b2, 0.01, new ConstantTexture(Vector3(0, 0, 0))));
 
+    lights.push_back(new XZRectangle(213, 343, 227, 332, 554, nullptr));
+
     return new HitableList(list);
 }
 
-Hitable* final(double aspect, Camera& camera)
+Hitable* final(double aspect, Camera& camera, std::vector<Hitable*>& lights)
 {
     const Vector3 lookFrom(478, 278, -600); //(278, 278, -800); //(13, 2, 3);
     const Vector3 lookAt(278, 278, 0); //(0, 1, 0);
@@ -270,7 +288,7 @@ Hitable* final(double aspect, Camera& camera)
 
     list.push_back(new BVH(boxList, 0, 1));
     Material* light = new DiffuseLight(new ConstantTexture(Vector3(6, 6, 6)));
-    list.push_back(new XZRectangle(123, 423, 147, 412, 554, light));
+    list.push_back(new FlipNormals(new XZRectangle(123, 423, 147, 412, 554, light)));
     Vector3 center(400, 400, 200);
     list.push_back(new MovingSphere(center, center+Vector3(30, 0, 0), 0, 1, 50, new Lambertian(new ConstantTexture(Vector3(0.7, 0.3, 0.1)))));
     list.push_back(new Sphere(Vector3(260, 150, 45), 50, new Dielectric(1.5)));
@@ -292,6 +310,11 @@ Hitable* final(double aspect, Camera& camera)
         boxList2.push_back(new Sphere(Vector3(165*drand48(), 165*drand48(), 165*drand48()), 10, white));
     }
     list.push_back(new Translate(new RotateY(new BVH(boxList2, 0.0, 1.0), 15), Vector3(-100, 270, 395)));
+
+    lights.push_back(new XZRectangle(123, 423, 147, 412, 554, nullptr));
+    //lights.push_back(new Sphere(Vector3(360, 150, 145), 70, nullptr));
+    //lights.push_back(new Sphere(Vector3(0, 0, 0), 5000, nullptr));
+
     return new HitableList(list);
 }
 
@@ -341,13 +364,16 @@ int main(int argc, char** argv)
 
     Camera cam;
     const double aspect = double(nx)/double(ny);
-    Hitable* world = cornellBoxTris(aspect, cam);// cornellBox(); // simpleLight(); //randomScene(); //
-    Hitable* lightShape = new XZRectangle(213, 343, 227, 332, 554, nullptr);
-    Hitable* glassSphere = new Sphere(Vector3(190, 90, 190), 90, nullptr);
-    std::vector<Hitable*> a;
-    a.push_back(lightShape);
-    //a.push_back(glassSphere);
-    HitableList* stuff = new HitableList(a);
+    std::vector<Hitable*> lights;
+    Hitable* world = final(aspect, cam, lights);// cornellBox(); // simpleLight(); //randomScene(); //
+    HitableList* lightShapes = nullptr;
+    if (!lights.empty())
+        lightShapes = new HitableList(lights);
+    //Hitable* lightShape = new XZRectangle(213, 343, 227, 332, 554, nullptr);
+    //Hitable* glassSphere = new Sphere(Vector3(190, 90, 190), 90, nullptr);
+    //lights.push_back(lightShape);
+    //lights.push_back(glassSphere);
+    //HitableList* lightShapes = new HitableList(lights);
 
     int numHitables = world->numChildren();
     std::cout << "Total Hitables: " << numHitables << std::endl;
@@ -367,7 +393,7 @@ int main(int argc, char** argv)
                 auto u = (i+drand48())/double(nx);
                 auto v = (j+drand48())/double(ny);
                 Ray r = cam.getRay(u, v);
-                col += deNan(color(r, world, stuff, 0));
+                col += deNan(color(r, world, lightShapes, 0));
             }
             col /= double(ns);
             outImage[index++] = Vector3(sqrt(std::max(0.0, col[0])), sqrt(std::max(0.0, col[1])), sqrt(std::max(0.0, col[2])));

@@ -101,3 +101,18 @@ BVH::BVH(std::vector<Hitable *> &list, double time0, double time1)
 
     m_bbox = AABB::join(boxLeft, boxRight);
 }
+
+double BVH::pdfValue(const Vector3& o, const Vector3& v) const
+{
+    double weight = 0.5;
+    double sum = weight * left->pdfValue(o, v) + weight * right->pdfValue(o, v);
+    return sum;
+}
+
+Vector3 BVH::random(const Vector3& o) const
+{
+    if (drand48() < 0.5)
+        return left->random(o);
+    else
+        return right->random(o);
+}

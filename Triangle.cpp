@@ -70,10 +70,7 @@ bool Triangle::hit(const Ray &ray, double t_min, double t_max, HitRecord &rec) c
     rec.material = material;
 
     Vector3 bary(1.0 - u - v, u, v);
-    Vector2 uv;
-    calcTexCoord(bary, uv);
-    rec.u = uv.u();
-    rec.v = uv.v();
+    calcTexCoord(bary, rec.uv);
 
     return true;
 }

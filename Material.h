@@ -37,7 +37,7 @@ public:
     {
         return 0.0;
     }
-    virtual Vector3 emitted(const Ray& r_in, const HitRecord& rec, double u, double v, const Vector3& p) const
+    virtual Vector3 emitted(const Ray& r_in, const HitRecord& rec, const Vector2& uv, const Vector3& p) const
     {
         return Vector3(0, 0, 0);
     }
@@ -52,7 +52,7 @@ public:
     virtual bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const
     {
         srec.isSpecular = false;
-        srec.attenuation = albedo->value(rec.u, rec.v, rec.p);
+        srec.attenuation = albedo->value(rec.uv, rec.p);
         srec.pdf = new CosinePdf(rec.normal);
         return true;
     }
@@ -153,10 +153,10 @@ public:
     {
         return false;
     }
-    virtual Vector3 emitted(const Ray& r_in, const HitRecord& rec, double u, double v, const Vector3& p) const
+    virtual Vector3 emitted(const Ray& r_in, const HitRecord& rec, const Vector2& uv, const Vector3& p) const
     {
         if (dot(rec.normal, r_in.direction()) < 0)
-            return emit->value(u, v, p);
+            return emit->value(uv, p);
         else
             return Vector3(0, 0, 0);
     }
@@ -175,9 +175,14 @@ public:
     {
         // TODO: fix this for new ScatterRecord
         srec.isSpecular = false;
-        srec.attenuation = albedo->value(rec.u, rec.v, rec.p);
-        srec.pdf = new CosinePdf(rec.normal);
+        srec.attenuation = albedo->value(rec.uv, rec.p);
+        srec.pdf = new ConstPdf();
         return true;
+    }
+
+    virtual double scatteringPdf(const Ray& r_in, const HitRecord& rec, const Ray& scattered) const
+    {
+        return 1.0 / (4 * M_PI);
     }
 
 private:

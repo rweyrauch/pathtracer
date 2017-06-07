@@ -14,8 +14,8 @@ bool XYRectangle::hit(const Ray &r_in, double t0, double t1, HitRecord &rec) con
     double y = r_in.origin().y() + t * r_in.direction().y();
     if (x < x0 || x > x1 || y < y0 || y > y1) return false;
 
-    rec.u = (x-x0)/(x1-x0);
-    rec.v = (y-y0)/(y1-y0);
+    rec.uv.u() = (x-x0)/(x1-x0);
+    rec.uv.v() = (y-y0)/(y1-y0);
     rec.t = t;
     rec.material = material;
     rec.p = r_in.pointAt(t);
@@ -38,8 +38,8 @@ bool XZRectangle::hit(const Ray &r_in, double t0, double t1, HitRecord &rec) con
     double z = r_in.origin().z() + t * r_in.direction().z();
     if (x < x0 || x > x1 || z < z0 || z > z1) return false;
 
-    rec.u = (x-x0)/(x1-x0);
-    rec.v = (z-z0)/(z1-z0);
+    rec.uv.u() = (x-x0)/(x1-x0);
+    rec.uv.v() = (z-z0)/(z1-z0);
     rec.t = t;
     rec.material = material;
     rec.p = r_in.pointAt(t);
@@ -62,8 +62,8 @@ bool YZRectangle::hit(const Ray &r_in, double t0, double t1, HitRecord &rec) con
     double z = r_in.origin().z() + t * r_in.direction().z();
     if (y < y0 || y > y1 || z < z0 || z > z1) return false;
 
-    rec.u = (y-y0)/(y1-y0);
-    rec.v = (z-z0)/(z1-z0);
+    rec.uv.u() = (y-y0)/(y1-y0);
+    rec.uv.v() = (z-z0)/(z1-z0);
     rec.t = t;
     rec.material = material;
     rec.p = r_in.pointAt(t);

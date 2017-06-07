@@ -64,7 +64,7 @@ class ConstPdf : public Pdf
 {
 public:
     virtual double value(const Vector3& direction) const { return 1; };
-    virtual Vector3 generate() const { return randomCosineDirection(); };
+    virtual Vector3 generate() const { return randomToUnitSphere(1, 1); };
 };
 
 class CosinePdf : public Pdf
