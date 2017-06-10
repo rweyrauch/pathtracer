@@ -39,6 +39,12 @@ set(SOURCE_FILES
         World.h
         World.cpp
         ONB.h
-        ONB.cpp PDF.h Triangle.cpp Triangle.h AmbientLight.h)
+        ONB.cpp
+        PDF.h
+        Triangle.cpp
+        Triangle.h
+        AmbientLight.h)
 
 add_executable(pathtracer ${SOURCE_FILES})
+
+add_subdirectory("cuda")

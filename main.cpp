@@ -25,6 +25,8 @@
 
 AmbientLight* g_ambientLight = new ConstantAmbient();
 
+#define clamp(value, lower, upper) std::max(std::min((value), (upper)), (lower))
+
 Vector3 color(const Ray& r, Hitable* world, Hitable* lightShape, int depth)
 {
     HitRecord rec;
@@ -375,9 +377,9 @@ void writeImage(const std::string& outFile, const Vector3* outImage, int nx, int
             for (int i = 0; i < nx * ny; i++)
             {
                 const Vector3& col = outImage[i];
-                int ir = int(255.99 * col[0]);
-                int ig = int(255.99 * col[1]);
-                int ib = int(255.99 * col[2]);
+                int ir = clamp(int(255.99 * col[0]), 0, 255);
+                int ig = clamp(int(255.99 * col[1]), 0, 255);
+                int ib = clamp(int(255.99 * col[2]), 0, 255);
                 *currentOut++ = (unsigned char)ir;
                 *currentOut++ = (unsigned char)ig;
                 *currentOut++ = (unsigned char)ib;
@@ -454,7 +456,7 @@ int main(int argc, char** argv)
     Camera cam;
     const double aspect = double(nx)/double(ny);
     std::vector<Hitable*> lights;
-    Hitable* world = randomScene(aspect, cam, lights);// cornellBox(); // simpleLight(); //randomScene(); //
+    Hitable* world = final(aspect, cam, lights);// cornellBox(); // simpleLight(); //randomScene(); //
     HitableList* lightShapes = nullptr;
     if (!lights.empty())
         lightShapes = new HitableList(lights);
