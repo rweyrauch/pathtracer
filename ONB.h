@@ -10,7 +10,7 @@
 class ONB
 {
 public:
-    ONB() {}
+    ONB() = default;
 
     Vector3 operator[](int i) const { return axis[i]; }
     const Vector3& u() const { return axis[0]; }

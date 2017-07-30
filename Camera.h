@@ -12,8 +12,7 @@
 class Camera
 {
 public:
-    Camera()
-    {}
+    Camera() = default;
 
     Camera(double vfov, double aspect) :
         origin(0, 0, 0),
@@ -58,13 +57,14 @@ public:
         return Ray(origin + offset, lowerLeftCorner + s * horizontal + t * vertical - origin - offset, time);
     }
 
-    Vector3 origin;
-    Vector3 lowerLeftCorner;
-    Vector3 horizontal;
-    Vector3 vertical;
-    Vector3 u, v, w;
-    double time0, time1;
-    double lens_radius;
+private:
+    Vector3 origin{};
+    Vector3 lowerLeftCorner{};
+    Vector3 horizontal{};
+    Vector3 vertical{};
+    Vector3 u{}, v{}, w{};
+    double time0{}, time1{};
+    double lens_radius{};
 };
 
 #endif //PATHTRACER_CAMERA_H

@@ -36,8 +36,6 @@ set(SOURCE_FILES
         Texture.cpp
         Progress.cpp
         Progress.h
-        World.h
-        World.cpp
         ONB.h
         ONB.cpp
         PDF.h
@@ -46,5 +44,3 @@ set(SOURCE_FILES
         AmbientLight.h)
 
 add_executable(pathtracer ${SOURCE_FILES})
-
-add_subdirectory("cuda")

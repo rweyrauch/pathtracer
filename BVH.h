@@ -12,20 +12,24 @@
 class BVH : public Hitable
 {
 public:
-    BVH() {}
+    BVH() = default;
+
     BVH(std::vector<Hitable*>& list, double time0, double time1);
 
-    virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const;
-    virtual bool bounds(double t0, double t1, AABB& bbox) const;
+    bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const override;
 
-    virtual double pdfValue(const Vector3& o, const Vector3& v) const;
-    virtual Vector3 random(const Vector3& o) const;
+    bool bounds(double t0, double t1, AABB& bbox) const override;
 
-    virtual int numChildren() const { return 2 + left->numChildren() + right->numChildren(); }
+    double pdfValue(const Vector3& o, const Vector3& v) const override;
 
-    Hitable* left;
-    Hitable* right;
-    AABB m_bbox;
+    Vector3 random(const Vector3& o) const override;
+
+    int numChildren() const override
+    { return 2 + left->numChildren() + right->numChildren(); }
+
+    Hitable* left{};
+    Hitable* right{};
+    AABB m_bbox{};
 };
 
 

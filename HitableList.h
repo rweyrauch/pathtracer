@@ -5,17 +5,18 @@
 #ifndef PATHTRACER_HITABLELIST_H
 #define PATHTRACER_HITABLELIST_H
 
+#include <utility>
 #include <vector>
 #include "Hitable.h"
 
 class HitableList : public Hitable {
 public:
-    HitableList() { }
+    HitableList() = default;
 
-    HitableList(const std::vector<Hitable*>& l) :
-        list(l) { }
+    explicit HitableList(std::vector<Hitable *> l) :
+        list(std::move(l)) { }
 
-    virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const
+    bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const override
     {
         HitRecord temp_rec;
         bool hit_anything = false;
@@ -31,12 +32,14 @@ public:
         }
         return hit_anything;
     }
-    virtual bool bounds(double t0, double t1, AABB& bbox) const;
 
-    virtual double pdfValue(const Vector3& o, const Vector3& v) const;
-    virtual Vector3 random(const Vector3& o) const;
+    bool bounds(double t0, double t1, AABB& bbox) const override;
 
-    virtual int numChildren() const
+    double pdfValue(const Vector3& o, const Vector3& v) const override;
+
+    Vector3 random(const Vector3& o) const override;
+
+    int numChildren() const override
     {
         int numChildren = 1;
         for (auto ip : list)

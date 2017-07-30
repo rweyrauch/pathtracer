@@ -10,7 +10,7 @@
 
 class Vector3 {
 public:
-    Vector3() { }
+    Vector3() = default;
 
     Vector3(double e0, double e1, double e2) :
         e{e0, e1, e2} { }
@@ -32,7 +32,7 @@ public:
 
     inline const Vector3& operator+() const { return *this; }
 
-    inline Vector3 operator-() const { return Vector3(-e[0], -e[1], -e[2]); }
+    inline Vector3 operator-() const { return {-e[0], -e[1], -e[2]}; }
 
     inline double operator[](int i) const { return e[i]; }
 
@@ -112,37 +112,37 @@ inline void Vector3::make_unit_vector()
 
 inline Vector3 operator+(const Vector3& v1, const Vector3& v2)
 {
-    return Vector3(v1.e[0]+v2.e[0], v1.e[1]+v2.e[1], v1.e[2]+v2.e[2]);
+    return {v1.e[0]+v2.e[0], v1.e[1]+v2.e[1], v1.e[2]+v2.e[2]};
 }
 
 inline Vector3 operator-(const Vector3& v1, const Vector3& v2)
 {
-    return Vector3(v1.e[0]-v2.e[0], v1.e[1]-v2.e[1], v1.e[2]-v2.e[2]);
+    return {v1.e[0]-v2.e[0], v1.e[1]-v2.e[1], v1.e[2]-v2.e[2]};
 }
 
 inline Vector3 operator*(const Vector3& v1, const Vector3& v2)
 {
-    return Vector3(v1.e[0]*v2.e[0], v1.e[1]*v2.e[1], v1.e[2]*v2.e[2]);
+    return {v1.e[0]*v2.e[0], v1.e[1]*v2.e[1], v1.e[2]*v2.e[2]};
 }
 
 inline Vector3 operator/(const Vector3& v1, const Vector3& v2)
 {
-    return Vector3(v1.e[0]/v2.e[0], v1.e[1]/v2.e[1], v1.e[2]/v2.e[2]);
+    return {v1.e[0]/v2.e[0], v1.e[1]/v2.e[1], v1.e[2]/v2.e[2]};
 }
 
 inline Vector3 operator*(double s, const Vector3& v2)
 {
-    return Vector3(s*v2.e[0], s*v2.e[1], s*v2.e[2]);
+    return {s*v2.e[0], s*v2.e[1], s*v2.e[2]};
 }
 
 inline Vector3 operator/(const Vector3& v1, double s)
 {
-    return Vector3(v1.e[0]/s, v1.e[1]/s, v1.e[2]/s);
+    return {v1.e[0]/s, v1.e[1]/s, v1.e[2]/s};
 }
 
 inline Vector3 operator*(const Vector3& v1, double s)
 {
-    return Vector3(v1.e[0]*s, v1.e[1]*s, v1.e[2]*s);
+    return {v1.e[0]*s, v1.e[1]*s, v1.e[2]*s};
 }
 
 inline double dot(const Vector3& v1, const Vector3& v2)
@@ -152,9 +152,9 @@ inline double dot(const Vector3& v1, const Vector3& v2)
 
 inline Vector3 cross(const Vector3& v1, const Vector3& v2)
 {
-    return Vector3((v1.e[1]*v2.e[2] - v1.e[2]*v2.e[1]),
+    return {(v1.e[1]*v2.e[2] - v1.e[2]*v2.e[1]),
                    (-(v1.e[0]*v2.e[2] - v1.e[2]*v2.e[0])),
-                   (v1.e[0]*v2.e[1] - v1.e[1]*v2.e[0]));
+                   (v1.e[0]*v2.e[1] - v1.e[1]*v2.e[0])};
 }
 
 inline Vector3 unit_vector(const Vector3& v)

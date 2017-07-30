@@ -7,7 +7,7 @@
 void ONB::buildFromW(const Vector3 &n)
 {
     axis[2] = unit_vector(n);
-    Vector3 a;
+    Vector3 a{};
     if (fabs(w().x()) > 0.9)
         a = Vector3(0, 1, 0);
     else

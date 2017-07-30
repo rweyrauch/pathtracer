@@ -7,33 +7,38 @@
 
 #include "Hitable.h"
 
-void get_uv(const Vector3& p, double& u, double& v);
-
-class Sphere : public Hitable {
+class Sphere : public Hitable
+{
 public:
-    Sphere() { }
+    Sphere() = default;
 
     Sphere(const Vector3& cen, double r, Material* m) :
         center(cen),
         radius(r),
         material(m) { }
 
-    virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const;
-    virtual bool bounds(double t0, double t1, AABB& bbox) const;
+    bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const override;
 
-    virtual double pdfValue(const Vector3& o, const Vector3& v) const;
-    virtual Vector3 random(const Vector3& o) const;
+    bool bounds(double t0, double t1, AABB& bbox) const override;
 
-    Vector3 center;
-    double radius;
-    Material* material;
+    double pdfValue(const Vector3& o, const Vector3& v) const override;
+
+    Vector3 random(const Vector3& o) const override;
+
+    void get_uv(const Vector3& p, Vector2& uv) const;
+
+private:
+    Vector3 center{};
+    double radius = 0;
+    Material* material = nullptr;
 
 };
 
 class MovingSphere : public Hitable
 {
 public:
-    MovingSphere() {}
+    MovingSphere() = default;
+
     MovingSphere(const Vector3& cen0, const Vector3& cen1, double t0, double t1, double r, Material* mtl) :
         center0(cen0),
         center1(cen1),
@@ -43,15 +48,46 @@ public:
         material(mtl)
     {}
 
-    virtual bool hit(const Ray& ray, double t_min, double t_max, HitRecord& rec) const;
-    virtual bool bounds(double t0, double t1, AABB& bbox) const;
+    bool hit(const Ray& ray, double t_min, double t_max, HitRecord& rec) const override;
+
+    bool bounds(double t0, double t1, AABB& bbox) const override;
 
     Vector3 center(double time) const;
 
-    Vector3 center0, center1;
-    double time0, time1;
-    double radius;
-    Material* material;
+    void get_uv(const Vector3& p, Vector2& uv) const;
+
+private:
+    Vector3 center0{}, center1{};
+    double time0 = 0, time1 = 0;
+    double radius = 0;
+    Material* material = nullptr;
+};
+
+class Cone : public Hitable
+{
+public:
+    Cone() = default;
+
+    Cone(const Vector3& cen, double r, double h, Material* m) :
+        center(cen),
+        radius(r),
+        height(h),
+        material(m) { }
+
+    bool hit(const Ray& r, double tmin, double tmax, HitRecord& rec) const override;
+
+    bool bounds(double t0, double t1, AABB& bbox) const override;
+
+    double pdfValue(const Vector3& o, const Vector3& v) const override;
+
+    Vector3 random(const Vector3& o) const override;
+
+    void get_uv(const Vector3& p, Vector2& uv) const;
+
+private:
+    Vector3 center{};
+    double radius = 0, height = 0;
+    Material* material = nullptr;
 };
 
 #endif //PATHTRACER_SPHERE_H

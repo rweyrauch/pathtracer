@@ -34,7 +34,7 @@ void permute(int* p, int n)
 {
     for (int i = n-1; i > 0; i--)
     {
-        int target = int(drand48()*(i+1));
+        auto target = int(drand48()*(i+1));
         int tmp = p[i];
         p[i] = p[target];
         p[target] = tmp;
@@ -42,7 +42,7 @@ void permute(int* p, int n)
 }
 int* Perlin::generate_perm()
 {
-    int* p = new int[256];
+    auto * p = new int[256];
     for (int i = 0; i < 256; i++)
         p[i] = i;
     permute(p, 256);
@@ -51,7 +51,7 @@ int* Perlin::generate_perm()
 
 Vector3* Perlin::generate()
 {
-    Vector3* p = new Vector3[256];
+    auto * p = new Vector3[256];
     for (int i = 0; i < 256; i++)
     {
         p[i] = unit_vector(Vector3(-1+2*drand48(), -1 + 2 * drand48(), -1 + 2 * drand48()));
@@ -61,7 +61,7 @@ Vector3* Perlin::generate()
 
 double* Perlin::generate_double()
 {
-    double *p = new double[256];
+    auto *p = new double[256];
     for (int i = 0; i < 256; i++)
         p[i] = drand48();
     return p;

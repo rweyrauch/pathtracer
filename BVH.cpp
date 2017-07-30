@@ -44,7 +44,7 @@ bool BVH::bounds(double t0, double t1, AABB &bbox) const
 
 BVH::BVH(std::vector<Hitable *> &list, double time0, double time1)
 {
-    int axis = int(3 * drand48());
+    auto axis = int(3 * drand48());
     if (axis == 0)
     {
         auto boxXCompare = [](Hitable* a, Hitable* b)->bool

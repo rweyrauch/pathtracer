@@ -8,7 +8,6 @@
 #include "Camera.h"
 #include "Material.h"
 #include "cxxopts.hpp"
-#include "World.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -65,6 +64,63 @@ Vector3 color(const Ray& r, Hitable* world, Hitable* lightShape, int depth)
     else {
         return g_ambientLight->emitted(r);
     }
+}
+
+Vector3 color_nr(const Ray& r, Hitable* world, Hitable* lightShape)
+{
+    Vector3 accumCol(1, 1, 1);
+
+    Ray currentRay(r);
+
+    for (int depth = 0; depth < 50; depth++)
+    {
+        HitRecord rec;
+        if (world->hit(currentRay, 0.001, DBL_MAX, rec))
+        {
+            ScatterRecord srec;
+            Vector3 emitted = rec.material->emitted(currentRay, rec, rec.uv, rec.p);
+            if (rec.material->scatter(currentRay, rec, srec))
+            {
+                if (srec.isSpecular)
+                {
+                    accumCol *= srec.attenuation;
+                    currentRay = srec.specularRay;
+                }
+                else
+                {
+                    if (lightShape != nullptr)
+                    {
+                        HitablePdf plight(lightShape, rec.p);
+                        MixturePdf p(&plight, srec.pdf);
+                        Ray scattered = Ray(rec.p, p.generate(), currentRay.time());
+                        double pdfValue = p.value(scattered.direction());
+                        delete srec.pdf;
+                        accumCol *= (emitted + (srec.attenuation * rec.material->scatteringPdf(currentRay, rec, scattered)) / pdfValue);
+                        currentRay = scattered;
+                    }
+                    else
+                    {
+                        Ray scattered = Ray(rec.p, srec.pdf->generate(), currentRay.time());
+                        double pdfValue = srec.pdf->value(scattered.direction());
+                        delete srec.pdf;
+                        accumCol *= (emitted + (srec.attenuation * rec.material->scatteringPdf(currentRay, rec, scattered)) / pdfValue);
+                        currentRay = scattered;
+                    }
+                }
+            }
+            else
+            {
+                accumCol *= emitted;
+                break;
+            }
+        }
+        else
+        {
+            accumCol *= g_ambientLight->emitted(r);
+            break;
+        }
+    }
+    return accumCol;
 }
 
 Hitable* twoSpheres(double aspect, Camera& camera, std::vector<Hitable*>& lights)
@@ -200,7 +256,7 @@ Hitable* cornellBox(double aspect, Camera& camera, std::vector<Hitable*>& lights
     list.push_back(new FlipNormals(new XYRectangle(0, 555, 0, 555, 555, white)));
 
     list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 165, 165), white), -18), Vector3(130, 0, 65)));
-    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), aluminum), 15), Vector3(265, 0, 295)));
+    list.push_back(new Translate(new RotateY(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), white), 15), Vector3(265, 0, 295)));
     //list.push_back(new Translate(new Box(Vector3(0, 0, 0), Vector3(165, 330, 165), aluminum), Vector3(265, 0, 295)));
     //list.push_back(new Sphere(Vector3(190, 90, 190), 90, glass));
 
@@ -214,6 +270,9 @@ Hitable* cornellBox(double aspect, Camera& camera, std::vector<Hitable*>& lights
     //list.push_back(new ConstantMedium(b2, 0.01, new ConstantTexture(Vector3(0, 0, 0))));
 
     lights.push_back(new XZRectangle(213, 343, 227, 332, 554, nullptr));
+
+    delete g_ambientLight;
+    g_ambientLight = new SkyAmbient();
 
     return new HitableList(list);
 }
@@ -406,7 +465,7 @@ void renderLine(int line, Vector3* outLine, int nx, int ny, int ns, Camera& cam,
             auto u = (x+drand48())/double(nx);
             auto v = (line+drand48())/double(ny);
             Ray r = cam.getRay(u, v);
-            col += deNan(color(r, world, lightShapes, 0));
+            col += deNan(color_nr(r, world, lightShapes));
         }
         col /= double(ns);
         outLine[x] = Vector3(sqrt(std::max(0.0, col[0])), sqrt(std::max(0.0, col[1])), sqrt(std::max(0.0, col[2])));

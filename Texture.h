@@ -19,33 +19,32 @@ public:
 class ConstantTexture : public Texture
 {
 public:
-    ConstantTexture()
-    {}
+    ConstantTexture() = default;
 
-    ConstantTexture(const Vector3 &c) :
+    explicit ConstantTexture(const Vector3 &c) :
         color(c)
     {}
 
-    virtual Vector3 value(const Vector2& uv, const Vector3 &p) const
+    Vector3 value(const Vector2& uv, const Vector3 &p) const override
     {
         return color;
     }
 
-    Vector3 color;
+private:
+    Vector3 color{};
 };
 
 class CheckerTexture : public Texture
 {
 public:
-    CheckerTexture()
-    {}
+    CheckerTexture() = default;
 
     CheckerTexture(Texture *t0, Texture *t1) :
         odd(t1),
         even(t0)
     {}
 
-    virtual Vector3 value(const Vector2& uv, const Vector3 &p) const
+    Vector3 value(const Vector2& uv, const Vector3 &p) const override
     {
         double sines = sin(10 * p.x()) * sin(10 * p.y()) * sin(10 * p.z());
         if (sines < 0)
@@ -54,26 +53,29 @@ public:
             return even->value(uv, p);
     }
 
-    Texture *odd;
-    Texture *even;
+private:
+    Texture *odd = nullptr;
+    Texture *even = nullptr;
 };
 
 class NoiseTexture : public Texture
 {
 public:
-    NoiseTexture(double sc) :
+    explicit NoiseTexture(double sc) :
         scale(sc)
     {}
 
-    virtual Vector3 value(const Vector2& uv, const Vector3 &p) const
+    Vector3 value(const Vector2& uv, const Vector3 &p) const override
     {
         //double n = (Noise(p) + 1) / 2;
         //double n = Turbulence(scale * p);
-        double n = 0.5 * (1 + sin(scale * p.z() + 10 * perlin.turbulence(p)));
+        //double n = 0.5 * (1 + sin(scale * p.z() + 10 * perlin.turbulence(p)));
+        double n = 0.5 * (1 + sin(scale * p.z() + 10 * Turbulence(p)));
         assert(n >= 0.0);
-        return Vector3(n, n, n);
+        return {n, n, n};
     }
 
+private:
     double scale = 1.0;
     Perlin perlin;
 };
@@ -82,7 +84,7 @@ class ImageTexture : public Texture
 {
 public:
     ImageTexture()
-    {}
+    = default;
 
     ImageTexture(const unsigned char *pixels, int Nx, int Ny) :
         data(pixels),
@@ -90,10 +92,11 @@ public:
         ny(Ny)
     {}
 
-    virtual Vector3 value(const Vector2& uv, const Vector3 &p) const;
+    Vector3 value(const Vector2& uv, const Vector3 &p) const override;
 
-    const unsigned char *data;
-    int nx, ny;
+private:
+    const unsigned char *data{};
+    int nx = 0, ny= 0;
 };
 
 #endif //PATHTRACER_TEXTURE_H
