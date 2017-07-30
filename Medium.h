@@ -19,12 +19,15 @@ public:
         phaseFunction = new Isotropic(a);
     }
 
-    virtual bool hit(const Ray& r_in, double t0, double t1, HitRecord& rec) const;
-    virtual bool bounds(double t0, double t1, AABB& bbox) const
+    bool hit(const Ray& r_in, double t0, double t1, HitRecord& rec) const override;
+
+    bool bounds(double t0, double t1, AABB& bbox) const override
     {
         return boundary->bounds(t0, t1, bbox);
     }
-    virtual int numChildren() const { return 1 + boundary->numChildren(); }
+
+    int numChildren() const override
+    { return 1 + boundary->numChildren(); }
 
     Hitable* boundary;
     double density;

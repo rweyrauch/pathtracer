@@ -11,7 +11,8 @@
 class AABB
 {
 public:
-    AABB() {}
+    AABB() = default;
+
     AABB(const Vector3& a, const Vector3& b) :
         m_min(a),
         m_max(b) {}

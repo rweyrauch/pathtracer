@@ -9,12 +9,12 @@ bool HitableList::bounds(double t0, double t1, AABB &bbox) const
 {
     if (list.empty()) return false;
 
-    AABB tempBox;
+    AABB tempBox{};
     bool first = list.front()->bounds(t0, t1, tempBox);
     if (!first)
         return false;
-    else
-        bbox = tempBox;
+
+    bbox = tempBox;
 
     for (int i = 1; i < list.size(); i++)
     {

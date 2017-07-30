@@ -5,7 +5,7 @@
 #include <cstring>
 #include <cmath>
 #include <sys/ioctl.h>
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include "Progress.h"
 
@@ -53,7 +53,7 @@ void Progress::update(int numIterations, float value)
 {
     m_iterationsCompleted += numIterations;
     float percentDone = static_cast<float>(m_iterationsCompleted) / static_cast<float>(m_totalIterations);
-    int needed = static_cast<int>(roundf(m_total * percentDone));
+    auto needed = static_cast<int>(roundf(m_total * percentDone));
     if (needed > m_total) needed = m_total;
     while (m_printed < needed)
     {
@@ -65,13 +65,13 @@ void Progress::update(int numIterations, float value)
     auto elapsed = now - m_start;
     float totalSeconds = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(elapsed).count());
     float estRemaining = totalSeconds / percentDone - totalSeconds;
-    int hours = static_cast<int>(floorf(totalSeconds/3600.0f));
+    auto hours = static_cast<int>(floorf(totalSeconds/3600.0f));
     totalSeconds -= hours * 3600;
-    int minutes = static_cast<int>(floorf(totalSeconds/60.0f));
+    auto minutes = static_cast<int>(floorf(totalSeconds/60.0f));
     int seconds = static_cast<int>(totalSeconds) % 60;
-    int estHours = static_cast<int>(floorf(estRemaining/3600.0f));
+    auto estHours = static_cast<int>(floorf(estRemaining/3600.0f));
     estRemaining -= estHours * 3600;
-    int estMinutes = static_cast<int>(floorf(estRemaining/60.0f));
+    auto estMinutes = static_cast<int>(floorf(estRemaining/60.0f));
     int estSeconds = static_cast<int>(estRemaining) % 60;
 
     if (percentDone >= 1.0f)
@@ -98,9 +98,9 @@ void Progress::completed()
     auto now = std::chrono::steady_clock::now();
     auto elapsed = now - m_start;
     float totalSeconds = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(elapsed).count());
-    int hours = static_cast<int>(floorf(totalSeconds/3600.0f));
+    auto hours = static_cast<int>(floorf(totalSeconds/3600.0f));
     totalSeconds -= hours * 3600;
-    int minutes = static_cast<int>(floorf(totalSeconds/60.0f));
+    auto minutes = static_cast<int>(floorf(totalSeconds/60.0f));
     int seconds = static_cast<int>(totalSeconds) % 60;
     fprintf(stdout, " (%3d:%02d:%02ds)           \n", hours, minutes, seconds);
     fflush(stdout);

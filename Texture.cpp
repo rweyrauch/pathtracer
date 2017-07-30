@@ -15,5 +15,5 @@ Vector3 ImageTexture::value(const Vector2& uv, const Vector3 &p) const
     double r = int(data[3*i + 3*nx*j + 0]) / 255.0;
     double g = int(data[3*i + 3*nx*j + 1]) / 255.0;
     double b = int(data[3*i + 3*nx*j + 2]) / 255.0;
-    return Vector3(r, g, b);
+    return {r, g, b};
 }

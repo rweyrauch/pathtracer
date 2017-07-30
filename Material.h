@@ -39,24 +39,25 @@ public:
     }
     virtual Vector3 emitted(const Ray& r_in, const HitRecord& rec, const Vector2& uv, const Vector3& p) const
     {
-        return Vector3(0, 0, 0);
+        return {0, 0, 0};
     }
 };
 
 class Lambertian : public Material
 {
 public:
-    Lambertian(Texture* a) :
+    explicit Lambertian(Texture* a) :
             albedo(a) { }
 
-    virtual bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const
+    bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const override
     {
         srec.isSpecular = false;
         srec.attenuation = albedo->value(rec.uv, rec.p);
         srec.pdf = new CosinePdf(rec.normal);
         return true;
     }
-    virtual double scatteringPdf(const Ray& r_in, const HitRecord& rec, const Ray& scattered) const
+
+    double scatteringPdf(const Ray& r_in, const HitRecord& rec, const Ray& scattered) const override
     {
         double cosine = dot(rec.normal, unit_vector(scattered.direction()));
         if (cosine < 0) return 0;
@@ -77,7 +78,7 @@ public:
         if (f < 1) { fuzz = f; }
     }
 
-    virtual bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const
+    bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const override
     {
         Vector3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         srec.specularRay = Ray(rec.p, reflected + fuzz * randomInUnitSphere());
@@ -95,17 +96,17 @@ private:
 class Dielectric : public Material
 {
 public:
-    Dielectric(double ri) :
+    explicit Dielectric(double ri) :
         refIndex(ri) { }
 
-    virtual bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const
+    bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const override
     {
         srec.isSpecular = true;
         srec.pdf = nullptr;
         srec.attenuation = Vector3(1, 1, 1);
-        Vector3 outwardNormal;
+        Vector3 outwardNormal{};
         Vector3 reflected = reflect(r_in.direction(), rec.normal);
-        Vector3 refracted;
+        Vector3 refracted{};
         double reflectProb, cosine;
         double niOverNt;
         if (dot(r_in.direction(), rec.normal) > 0)
@@ -146,19 +147,20 @@ private:
 class DiffuseLight : public Material
 {
 public:
-    DiffuseLight(Texture* a) :
+    explicit DiffuseLight(Texture* a) :
         emit(a) {}
 
-    virtual bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const
+    bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const override
     {
         return false;
     }
-    virtual Vector3 emitted(const Ray& r_in, const HitRecord& rec, const Vector2& uv, const Vector3& p) const
+
+    Vector3 emitted(const Ray& r_in, const HitRecord& rec, const Vector2& uv, const Vector3& p) const override
     {
         if (dot(rec.normal, r_in.direction()) < 0)
             return emit->value(uv, p);
-        else
-            return Vector3(0, 0, 0);
+
+        return {0, 0, 0};
     }
 
 private:
@@ -168,10 +170,10 @@ private:
 class Isotropic : public Material
 {
 public:
-    Isotropic(Texture* a) :
+    explicit Isotropic(Texture* a) :
         albedo(a) {}
 
-    virtual bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const
+    bool scatter(const Ray& r_in, const HitRecord& rec, ScatterRecord& srec) const override
     {
         // TODO: fix this for new ScatterRecord
         srec.isSpecular = false;
@@ -180,7 +182,7 @@ public:
         return true;
     }
 
-    virtual double scatteringPdf(const Ray& r_in, const HitRecord& rec, const Ray& scattered) const
+    double scatteringPdf(const Ray& r_in, const HitRecord& rec, const Ray& scattered) const override
     {
         return 1.0 / (4 * M_PI);
     }

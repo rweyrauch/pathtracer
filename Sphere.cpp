@@ -7,7 +7,7 @@
 #include "ONB.h"
 #include "PDF.h"
 
-void get_uv(const Vector3& p, Vector2& uv)
+void Sphere::get_uv(const Vector3& p, Vector2& uv) const
 {
     double phi = atan2(p.z(), p.x());
     double theta = asin(p.y());
@@ -118,4 +118,80 @@ bool MovingSphere::bounds(double t0, double t1, AABB &bbox) const
     AABB box1 = AABB(center1 - Vector3(radius, radius, radius), center1 + Vector3(radius, radius, radius));
     bbox = AABB::join(box0, box1);
     return true;
+}
+
+void MovingSphere::get_uv(const Vector3& p, Vector2& uv) const
+{
+    double phi = atan2(p.z(), p.x());
+    double theta = asin(p.y());
+    uv.u() = 1 - (phi + M_PI) / (2 * M_PI);
+    uv.v() = (theta + M_PI/2) / M_PI;
+}
+
+bool Cone::hit(const Ray &r, double tmin, double tmax, HitRecord &rec) const
+{
+    double k = radius / height;
+    k = k * k;
+    const auto dx = r.direction().x();
+    const auto dy = r.direction().y();
+    const auto dz = r.direction().z();
+    const auto ox = r.origin().x();
+    const auto oy = r.origin().y();
+    const auto oz = r.origin().z();
+
+    double a = dx * dx + dy * dy - k * dz * dz;
+    double b = 2.0 * (dx * ox + dy * oy - k * dz * (oz - height));
+    double c = ox * ox + oy * oy - k * (oz - height) * (oz - height);
+
+    double discriminant = b * b - a * c;
+    if (discriminant > 0)
+    {
+        double temp = (-b - sqrt(discriminant)) / a;
+        if (temp < tmax && temp > tmin)
+        {
+            rec.t = temp;
+            rec.p = r.pointAt(rec.t);
+            // TODO: compute correct normal and uv
+            rec.normal = (rec.p - center) / radius;
+            rec.material = material;
+            get_uv(rec.p, rec.uv);
+            return true;
+        }
+        temp = (-b + sqrt(discriminant)) / a;
+        if (temp < tmax && temp > tmin)
+        {
+            rec.t = temp;
+            rec.p = r.pointAt(rec.t);
+            rec.normal = (rec.p - center) / radius;
+            rec.material = material;
+            get_uv(rec.p, rec.uv);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Cone::bounds(double t0, double t1, AABB &bbox) const
+{
+    return false;
+}
+
+double Cone::pdfValue(const Vector3 &o, const Vector3 &v) const
+{
+    return Hitable::pdfValue(o, v);
+}
+
+Vector3 Cone::random(const Vector3 &o) const
+{
+    return Hitable::random(o);
+}
+
+void Cone::get_uv(const Vector3& p, Vector2& uv) const
+{
+    double phi = atan2(p.y(), p.x());
+    if (phi < 0.0)
+        phi += 2.0 * M_PI;
+    uv.u() = phi / (2 * M_PI);
+    uv.v() = p.z() / height;
 }

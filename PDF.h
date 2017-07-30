@@ -11,7 +11,7 @@
 
 inline Vector3 randomInUnitSphere()
 {
-    Vector3 p;
+    Vector3 p{};
     do
     {
         p = 2.0*Vector3(drand48(), drand48(), drand48())-Vector3(1, 1, 1);
@@ -22,7 +22,7 @@ inline Vector3 randomInUnitSphere()
 
 inline Vector3 randomInUnitDisk()
 {
-    Vector3 p;
+    Vector3 p{};
     do
     {
         p = 2 * Vector3(drand48(), drand48(), 0) - Vector3(1, 1, 0);
@@ -38,7 +38,7 @@ inline Vector3 randomCosineDirection()
     double phi = 2 * M_PI * r1;
     double x = cos(phi) * 2 * sqrt(r2);
     double y = sin(phi) * 2 * sqrt(r2);
-    return Vector3(x, y, z);
+    return {x, y, z};
 }
 
 inline Vector3 randomToUnitSphere(double radius, double distSqrd)
@@ -49,13 +49,14 @@ inline Vector3 randomToUnitSphere(double radius, double distSqrd)
     double phi = 2 * M_PI * r1;
     double x = cos(phi)*sqrt(1-z*z);
     double y = sin(phi)*sqrt(1-z*z);
-    return Vector3(x, y, z);
+    return {x, y, z};
 }
 
 class Pdf
 {
 public:
-    virtual ~Pdf() {}
+    virtual ~Pdf() = default;
+
     virtual double value(const Vector3& direction) const = 0;
     virtual Vector3 generate() const = 0;
 };
@@ -63,30 +64,34 @@ public:
 class ConstPdf : public Pdf
 {
 public:
-    virtual double value(const Vector3& direction) const { return 1; };
-    virtual Vector3 generate() const { return randomToUnitSphere(1, 1); };
+    double value(const Vector3& direction) const override
+    { return 1; };
+
+    Vector3 generate() const override
+    { return randomToUnitSphere(1, 1); };
 };
 
 class CosinePdf : public Pdf
 {
 public:
-    CosinePdf(const Vector3& w) { uvw.buildFromW(w); }
+    explicit CosinePdf(const Vector3& w) { uvw.buildFromW(w); }
 
-    virtual double value(const Vector3& direction) const
+    double value(const Vector3& direction) const override
     {
         double cosine = dot(unit_vector(direction), uvw.w());
         if (cosine > 0)
             return cosine / M_PI;
-        else
-            return 0;
+
+        return 0;
     }
-    virtual Vector3 generate() const
+
+    Vector3 generate() const override
     {
         return uvw.local(randomCosineDirection());
     }
 
 private:
-    ONB uvw;
+    ONB uvw{};
 };
 
 class HitablePdf : public Pdf
@@ -96,18 +101,19 @@ public:
         origin(o),
         hitable(p) {}
 
-    virtual double value(const Vector3& direction) const
+    double value(const Vector3& direction) const override
     {
         return hitable->pdfValue(origin, direction);
     }
-    virtual Vector3 generate() const
+
+    Vector3 generate() const override
     {
         return hitable->random(origin);
     }
 
 private:
     Vector3 origin;
-    Hitable* hitable;
+    Hitable* hitable = nullptr;
 };
 
 class MixturePdf : public Pdf
@@ -115,20 +121,20 @@ class MixturePdf : public Pdf
 public:
     MixturePdf(Pdf* p0, Pdf* p1) { p[0] = p0; p[1] = p1; }
 
-    virtual double value(const Vector3& direction) const
+    double value(const Vector3& direction) const override
     {
         return 0.5 * p[0]->value(direction) + 0.5 * p[1]->value(direction);
     }
 
-    virtual Vector3 generate() const
+    Vector3 generate() const override
     {
         if (drand48() < 0.5)
             return p[0]->generate();
-        else
-            return p[1]->generate();
+
+        return p[1]->generate();
     }
 
 private:
-    Pdf* p[2];
+    Pdf* p[2] = {nullptr, nullptr};
 };
 #endif //PATHTRACER_PDF_H

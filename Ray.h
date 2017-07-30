@@ -9,7 +9,7 @@
 
 class Ray {
 public:
-    Ray() { }
+    Ray() = default;
 
     Ray(const Vector3& o, const Vector3& d, double t = 0) :
         m_origin(o),
