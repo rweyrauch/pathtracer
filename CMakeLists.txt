@@ -12,6 +12,7 @@ endif()
 set(SOURCE_FILES
         main.cpp
         Vector3.h
+        Vector2.h
         Ray.h
         Hitable.h
         Sphere.h

@@ -1,6 +1,12 @@
-//
-// Created by rick on 5/11/17.
-//
+/*
+ * Pathtracer based on Peter Shirley's 'Ray Tracing in One Weekend' e-book
+ * series.
+ *
+ * Copyright (C) 2017 by Rick Weyrauch - rpweyrauch@gmail.com
+ *
+ * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
+ */
+
 #include <cfloat>
 #include "Sphere.h"
 #include "AABB.h"

@@ -1,6 +1,11 @@
-//
-// Created by rick on 6/6/17.
-//
+/*
+ * Pathtracer based on Peter Shirley's 'Ray Tracing in One Weekend' e-book
+ * series.
+ *
+ * Copyright (C) 2017 by Rick Weyrauch - rpweyrauch@gmail.com
+ *
+ * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
+ */
 
 #ifndef PATHTRACER_AMBIENTLIGHT_H
 #define PATHTRACER_AMBIENTLIGHT_H
